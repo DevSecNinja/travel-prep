@@ -76,6 +76,11 @@ body {
   padding: 0;
 }
 
+html {
+  padding-top: env(safe-area-inset-top);
+  background-color: var(--bg-1);
+}
+
 body {
   font-family:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
