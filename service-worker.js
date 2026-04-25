@@ -59,8 +59,14 @@ self.addEventListener('fetch', (event) => {
     req.mode === 'navigate' ||
     (req.headers.get('accept') ?? '').includes('text/html');
   const isYaml = url.pathname.endsWith('.yaml');
+  // Always fetch source scripts fresh so that the stamped BUILD_ID in
+  // main.js is up-to-date.  On iOS the HTTP cache can pin the old SW URL
+  // even after a redeploy, preventing updates unless main.js is re-fetched
+  // and re-registers with the new ?v= query string.
+  const isScript = url.pathname.endsWith('.js') &&
+    url.pathname.includes('/src/');
 
-  if (isHtml || isYaml) {
+  if (isHtml || isYaml || isScript) {
     event.respondWith(networkFirst(req));
   } else {
     event.respondWith(cacheFirst(req));
