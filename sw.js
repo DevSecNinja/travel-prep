@@ -53,9 +53,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
 
   // For Google Fonts: cache-first with network fallback
+  // Use URL origin comparison for safe matching
+  const requestOrigin = new URL(request.url).origin;
   if (
-    request.url.startsWith('https://fonts.googleapis.com') ||
-    request.url.startsWith('https://fonts.gstatic.com')
+    requestOrigin === 'https://fonts.googleapis.com' ||
+    requestOrigin === 'https://fonts.gstatic.com'
   ) {
     event.respondWith(
       caches.match(request).then((cached) => {

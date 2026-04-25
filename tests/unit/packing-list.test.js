@@ -193,6 +193,7 @@ describe('localStorage persistence', () => {
 describe('escapeHTML', () => {
   test('should escape HTML special characters', () => {
     expect(app.escapeHTML('<script>')).toBe('&lt;script&gt;');
+    expect(app.escapeHTML('<SCRIPT>')).toBe('&lt;SCRIPT&gt;');
     expect(app.escapeHTML('a & b')).toBe('a &amp; b');
   });
 });
