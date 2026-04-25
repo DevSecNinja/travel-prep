@@ -319,13 +319,16 @@ export async function initApp(root, opts = {}) {
 
     const copyBtn = /** @type {HTMLButtonElement} */ (dialog.querySelector('.share-copy-btn'));
     copyBtn.addEventListener('click', async () => {
+      let success = false;
       try {
         await navigator.clipboard.writeText(url);
+        success = true;
       } catch {
-        /** @type {HTMLInputElement} */ (dialog.querySelector('.share-url-input')).select();
-        document.execCommand('copy');
+        const input = /** @type {HTMLInputElement} */ (dialog.querySelector('.share-url-input'));
+        input.select();
+        success = document.execCommand('copy');
       }
-      copyBtn.textContent = 'Copied!';
+      copyBtn.textContent = success ? 'Copied!' : 'Copy failed';
       setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
     });
 

@@ -52,17 +52,20 @@ describe('share', () => {
   });
 
   it('decodeSharePayload filters out entries missing required fields', () => {
-    const payload = JSON.stringify([
+    // Build a raw payload that contains one valid and one invalid entry,
+    // then verify only the valid entry survives.
+    const rawPayload = JSON.stringify([
       { n: 'passport', c: 'must-have' },
       { invalid: true },
     ]);
-    const encoded = btoa(encodeURIComponent(payload))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-    const decoded = decodeSharePayload(encoded);
-    expect(decoded).toHaveLength(1);
-    expect(decoded[0]).toEqual({ name: 'passport', category: 'must-have' });
+    const encoded = decodeSharePayload(
+      btoa(encodeURIComponent(rawPayload))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, ''),
+    );
+    expect(encoded).toHaveLength(1);
+    expect(encoded[0]).toEqual({ name: 'passport', category: 'must-have' });
   });
 
   it('readShareFromHash accepts a hash string without the leading #', () => {

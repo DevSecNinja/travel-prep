@@ -47,7 +47,7 @@ export function decodeSharePayload(encoded) {
  * @returns {string}
  */
 export function buildShareUrl(items, base) {
-  const rawBase = base ?? (globalThis.location ? globalThis.location.href : '');
+  const rawBase = base ?? (globalThis.location?.href ?? '');
   const pageUrl = rawBase.split('#')[0];
   return pageUrl + '#share=' + encodeSharePayload(items);
 }
