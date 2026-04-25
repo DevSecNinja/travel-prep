@@ -364,7 +364,7 @@ export async function initApp(root, opts = {}) {
     };
     ghost.addEventListener('transitionend', cleanup, { once: true });
     // Safety net in case transitionend doesn't fire.
-    setTimeout(cleanup, 800);
+    setTimeout(cleanup, 1100);
   }
 
   // ----- Theme ---------------------------------------------------------------
