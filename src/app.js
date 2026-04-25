@@ -43,6 +43,10 @@ export async function initApp(root, opts = {}) {
   saveState(state, storage);
 
   applyTheme(state.theme);
+  // ----- GitHub Stars --------------------------------------------------------
+
+  let cachedStarCount = /** @type {number|null} */ (null);
+
   render();
 
   // ----- Rendering -----------------------------------------------------------
@@ -149,10 +153,68 @@ export async function initApp(root, opts = {}) {
     // e.g. 'abc123def456-20240101120000'
     const shortHash = buildId.includes('-') ? buildId.split('-')[0] : buildId;
     const isPlaceholder = shortHash === '__BUILD_ID__';
-    footer.innerHTML = isPlaceholder
-      ? `<p>Travel Prep &mdash; <a href="https://github.com/DevSecNinja/travel-prep" target="_blank" rel="noopener">source</a></p>`
-      : `<p>Travel Prep &mdash; <a href="https://github.com/DevSecNinja/travel-prep/commit/${shortHash}" target="_blank" rel="noopener">${shortHash}</a></p>`;
+    const commitContent = isPlaceholder
+      ? `dev`
+      : `<a class="commit-link" href="https://github.com/DevSecNinja/travel-prep/commit/${shortHash}" target="_blank" rel="noopener">${shortHash}</a>`;
+    footer.innerHTML = `
+      <p>Travel Prep &mdash; Built by <a href="https://github.com/DevSecNinja" target="_blank" rel="noopener">DevSecNinja</a></p>
+      <span class="commit-sha">${commitContent}</span>
+      <div class="github-star">
+        <a href="https://github.com/DevSecNinja/travel-prep" target="_blank" rel="noopener" class="github-star-button">
+          <span class="github-star-icon">⭐</span>
+          <span id="starCountText">Star on GitHub</span>
+        </a>
+        <span class="github-star-cta">If you find this useful, please star the repo to support! 🧳</span>
+      </div>
+    `;
     root.appendChild(footer);
+
+    if (cachedStarCount !== null) {
+      updateStarCount(cachedStarCount);
+    }
+  }
+
+  // ----- GitHub Stars --------------------------------------------------------
+
+  async function fetchGitHubStars() {
+    const CACHE_KEY = 'github_stars';
+    const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+    const REPO = 'DevSecNinja/travel-prep';
+
+    try {
+      const cached = storage.getItem(CACHE_KEY);
+      if (cached) {
+        const { count, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          cachedStarCount = count;
+          updateStarCount(count);
+          return;
+        }
+      }
+
+      const response = await fetch(`https://api.github.com/repos/${REPO}`);
+      if (response.ok) {
+        const data = await response.json();
+        const starCount = data.stargazers_count;
+        storage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ count: starCount, timestamp: Date.now() }),
+        );
+        cachedStarCount = starCount;
+        updateStarCount(starCount);
+      }
+    } catch (error) {
+      // Silently fail — star count is not critical
+      console.debug('Could not fetch star count:', error);
+    }
+  }
+
+  function updateStarCount(count) {
+    const el = root.querySelector('#starCountText');
+    if (el && count !== undefined) {
+      const plural = count === 1 ? 'star' : 'stars';
+      el.textContent = `${count.toLocaleString()} ${plural}`;
+    }
   }
 
   function buildThemeSelect() {
@@ -366,6 +428,8 @@ export async function initApp(root, opts = {}) {
     // Safety net in case transitionend doesn't fire.
     setTimeout(cleanup, 1100);
   }
+
+  fetchGitHubStars();
 
   // ----- Theme ---------------------------------------------------------------
 
