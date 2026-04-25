@@ -23,9 +23,11 @@ const CATEGORY_LABELS = {
  * @param {object} [opts]
  * @param {() => Promise<string>} [opts.fetchYaml]  - returns YAML text
  * @param {Storage} [opts.storage]
+ * @param {string} [opts.buildId]  - stamped by deploy workflow
  */
 export async function initApp(root, opts = {}) {
   const storage = opts.storage ?? globalThis.localStorage;
+  const buildId = opts.buildId ?? '__BUILD_ID__';
   const fetchYaml =
     opts.fetchYaml ??
     (async () => {
@@ -58,6 +60,7 @@ export async function initApp(root, opts = {}) {
     const controls = document.createElement('div');
     controls.className = 'controls';
     controls.appendChild(buildThemeSelect());
+    controls.appendChild(buildCheckAllButton());
     controls.appendChild(buildResetButton());
     header.appendChild(controls);
     root.appendChild(header);
@@ -84,7 +87,7 @@ export async function initApp(root, opts = {}) {
     form.setAttribute('aria-label', 'Add a new item');
     form.innerHTML = `
       <label class="visually-hidden" for="new-item-name">Item name</label>
-      <input id="new-item-name" name="name" type="text" placeholder="Add an item…" required maxlength="80" autocomplete="off" />
+      <input id="new-item-name" name="name" type="text" placeholder="Add an item…" required maxlength="80" autocomplete="off" inputmode="text" />
       <label class="visually-hidden" for="new-item-category">Category</label>
       <select id="new-item-category" name="category">
         <option value="must-have">Must-have</option>
@@ -92,6 +95,12 @@ export async function initApp(root, opts = {}) {
       </select>
       <button type="submit">Add</button>
     `;
+    const nameInput = /** @type {HTMLInputElement} */ (form.querySelector('#new-item-name'));
+    nameInput.addEventListener('input', () => {
+      const pos = nameInput.selectionStart;
+      nameInput.value = nameInput.value.toLowerCase();
+      if (pos !== null) nameInput.setSelectionRange(pos, pos);
+    });
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const nameEl = /** @type {HTMLInputElement} */ (
@@ -132,6 +141,18 @@ export async function initApp(root, opts = {}) {
       section.appendChild(ul);
       root.appendChild(section);
     }
+
+    // Footer
+    const footer = document.createElement('footer');
+    footer.className = 'app-footer';
+    // BUILD_ID format set by deploy.yml: '<12-char-sha>-<YYYYMMDDHHmmss>'
+    // e.g. 'abc123def456-20240101120000'
+    const shortHash = buildId.includes('-') ? buildId.split('-')[0] : buildId;
+    const isPlaceholder = shortHash === '__BUILD_ID__';
+    footer.innerHTML = isPlaceholder
+      ? `<p>Travel Prep &mdash; <a href="https://github.com/DevSecNinja/travel-prep" target="_blank" rel="noopener">source</a></p>`
+      : `<p>Travel Prep &mdash; <a href="https://github.com/DevSecNinja/travel-prep/commit/${shortHash}" target="_blank" rel="noopener">${shortHash}</a></p>`;
+    root.appendChild(footer);
   }
 
   function buildThemeSelect() {
@@ -153,6 +174,17 @@ export async function initApp(root, opts = {}) {
       applyTheme(state.theme);
     });
     return wrap;
+  }
+
+  function buildCheckAllButton() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'check-all-btn';
+    btn.textContent = 'Check all';
+    btn.addEventListener('click', () => {
+      checkAll();
+    });
+    return btn;
   }
 
   function buildResetButton() {
@@ -205,7 +237,7 @@ export async function initApp(root, opts = {}) {
    * @param {'must-have' | 'nice-to-have'} category
    */
   function addItem(name, category) {
-    const trimmed = name.trim();
+    const trimmed = name.trim().toLowerCase();
     if (!trimmed) return;
     if (!CATEGORIES.includes(category)) return;
     // Prevent exact-duplicate (case-insensitive within category).
@@ -264,6 +296,20 @@ export async function initApp(root, opts = {}) {
     }
   }
 
+  function checkAll() {
+    let changed = false;
+    for (const it of state.items) {
+      if (!it.checked) {
+        it.checked = true;
+        changed = true;
+      }
+    }
+    if (changed) {
+      saveState(state, storage);
+      render();
+    }
+  }
+
   // ----- Animation -----------------------------------------------------------
 
   /** @param {HTMLElement} li */
@@ -283,7 +329,10 @@ export async function initApp(root, opts = {}) {
     }
 
     const startRect = li.getBoundingClientRect();
-    const endRect = suitcase.getBoundingClientRect();
+    // Target the suitcase body itself so the item flies into the case, not just
+    // the surrounding card.
+    const suitcaseBody = suitcase.querySelector('.suitcase-body') ?? suitcase;
+    const endRect = /** @type {Element} */ (suitcaseBody).getBoundingClientRect();
     const ghost = li.cloneNode(true);
     /** @type {HTMLElement} */ (ghost).classList.add('ghost');
     /** @type {HTMLElement} */ (ghost).style.left = startRect.left + 'px';

@@ -1,8 +1,10 @@
 import { initApp } from './app.js';
 
+const BUILD_ID = '__BUILD_ID__';
+
 const root = document.getElementById('app');
 if (root) {
-  initApp(root).catch((err) => {
+  initApp(root, { buildId: BUILD_ID }).catch((err) => {
     console.error(err);
     root.innerHTML =
       '<p role="alert" class="error">Failed to load packing list. Please refresh.</p>';

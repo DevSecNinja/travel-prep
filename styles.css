@@ -153,6 +153,7 @@ button {
 
 .theme-select select,
 .reset-btn,
+.check-all-btn,
 .add-form input,
 .add-form select,
 .add-form button {
@@ -172,6 +173,17 @@ button {
 }
 
 .reset-btn:hover {
+  filter: brightness(1.05);
+}
+
+.check-all-btn {
+  background: linear-gradient(120deg, var(--success), var(--accent));
+  color: #2a2350;
+  font-weight: 600;
+  border: none;
+}
+
+.check-all-btn:hover {
   filter: brightness(1.05);
 }
 
@@ -253,6 +265,7 @@ button {
 
 .add-form input {
   flex: 1 1 12rem;
+  text-transform: lowercase;
 }
 
 .add-form button {
@@ -387,4 +400,27 @@ button {
   .ghost {
     transition: none;
   }
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+.app-footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.app-footer a:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
