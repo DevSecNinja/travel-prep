@@ -5,6 +5,7 @@ import {
   mergeDefaults,
   cryptoRandomId,
 } from './storage.js';
+import { buildShareUrl, readShareFromHash } from './share.js';
 
 /** @typedef {import('./storage.js').State} State */
 /** @typedef {import('./storage.js').Item} Item */
@@ -28,6 +29,7 @@ const CATEGORY_LABELS = {
 export async function initApp(root, opts = {}) {
   const storage = opts.storage ?? globalThis.localStorage;
   const buildId = opts.buildId ?? '__BUILD_ID__';
+  const locationHash = opts.locationHash ?? globalThis.location?.hash ?? '';
   const fetchYaml =
     opts.fetchYaml ??
     (async () => {
@@ -50,6 +52,24 @@ export async function initApp(root, opts = {}) {
   render();
   fetchGitHubStars();
 
+  // ----- Shared list import --------------------------------------------------
+
+  const sharedItems = readShareFromHash(locationHash);
+  if (sharedItems && sharedItems.length > 0) {
+    try {
+      if (globalThis.history?.replaceState && globalThis.location) {
+        globalThis.history.replaceState(
+          null,
+          '',
+          globalThis.location.pathname + globalThis.location.search,
+        );
+      }
+    } catch {
+      // Non-critical: removing the hash is a nice-to-have.
+    }
+    showImportDialog(sharedItems);
+  }
+
   // ----- Rendering -----------------------------------------------------------
 
   function render() {
@@ -67,6 +87,7 @@ export async function initApp(root, opts = {}) {
     controls.appendChild(buildThemeSelect());
     controls.appendChild(buildCheckAllButton());
     controls.appendChild(buildResetButton());
+    controls.appendChild(buildShareButton());
     header.appendChild(controls);
     root.appendChild(header);
 
@@ -259,6 +280,231 @@ export async function initApp(root, opts = {}) {
       uncheckAll();
     });
     return btn;
+  }
+
+  function buildShareButton() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'share-btn';
+    btn.textContent = '🔗 Share list';
+    btn.addEventListener('click', () => {
+      showShareDialog(buildShareUrl(state.items));
+    });
+    return btn;
+  }
+
+  /** @param {string} url */
+  function showShareDialog(url) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'share-dialog-title');
+
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.innerHTML = `
+      <h2 id="share-dialog-title" class="modal-title">📤 Share your list</h2>
+      <p class="modal-desc">Copy this link and send it to anyone — they can choose which items to add to their own list.</p>
+      <div class="share-url-row">
+        <input class="share-url-input" type="text" readonly aria-label="Shareable link" />
+        <button type="button" class="share-copy-btn">Copy</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-close-btn">Done</button>
+      </div>
+    `;
+
+    /** @type {HTMLInputElement} */ (dialog.querySelector('.share-url-input')).value = url;
+
+    const copyBtn = /** @type {HTMLButtonElement} */ (dialog.querySelector('.share-copy-btn'));
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /** @type {HTMLInputElement} */ (dialog.querySelector('.share-url-input')).select();
+        document.execCommand('copy');
+      }
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+    });
+
+    const handleKeyDown = (/** @type {KeyboardEvent} */ e) => {
+      if (e.key === 'Escape') close();
+    };
+    const close = () => {
+      overlay.remove();
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+    dialog.querySelector('.modal-close-btn').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', handleKeyDown);
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    /** @type {HTMLInputElement} */ (dialog.querySelector('.share-url-input')).select();
+  }
+
+  /**
+   * @param {Array<{name: string, category: string}>} sharedItems
+   */
+  function showImportDialog(sharedItems) {
+    const valid = sharedItems.filter((i) => /** @type {readonly string[]} */ (CATEGORIES).includes(i.category));
+    if (valid.length === 0) return;
+
+    const existingKeys = new Set(
+      state.items.map((i) => `${i.category}::${i.name.toLowerCase()}`),
+    );
+    const newItems = valid.filter(
+      (i) => !existingKeys.has(`${i.category}::${i.name.toLowerCase()}`),
+    );
+    const alreadyItems = valid.filter(
+      (i) => existingKeys.has(`${i.category}::${i.name.toLowerCase()}`),
+    );
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'import-dialog-title');
+
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+
+    const title = document.createElement('h2');
+    title.id = 'import-dialog-title';
+    title.className = 'modal-title';
+    title.textContent = '📥 Import shared list';
+    dialog.appendChild(title);
+
+    if (newItems.length === 0) {
+      const note = document.createElement('p');
+      note.className = 'modal-desc';
+      note.textContent = 'All items from this shared list are already in your list.';
+      dialog.appendChild(note);
+    } else {
+      const desc = document.createElement('p');
+      desc.className = 'modal-desc';
+      desc.textContent = 'Select the items you want to add to your list:';
+      dialog.appendChild(desc);
+
+      for (const cat of CATEGORIES) {
+        const catNew = newItems.filter((i) => i.category === cat);
+        const catExisting = alreadyItems.filter((i) => i.category === cat);
+        if (catNew.length === 0 && catExisting.length === 0) continue;
+
+        const section = document.createElement('section');
+        section.className = 'import-category';
+
+        const heading = document.createElement('h3');
+        heading.className = 'import-category-heading';
+        heading.textContent = CATEGORY_LABELS[cat];
+        section.appendChild(heading);
+
+        const ul = document.createElement('ul');
+        ul.className = 'import-item-list';
+
+        for (const item of catNew) {
+          const li = document.createElement('li');
+          li.className = 'import-item';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = true;
+          cb.id = `import-cb-${cat}-${item.name}`;
+          cb.dataset.name = item.name;
+          cb.dataset.category = item.category;
+          const lbl = document.createElement('label');
+          lbl.htmlFor = cb.id;
+          lbl.textContent = item.name;
+          li.appendChild(cb);
+          li.appendChild(lbl);
+          ul.appendChild(li);
+        }
+
+        for (const item of catExisting) {
+          const li = document.createElement('li');
+          li.className = 'import-item import-item-existing';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = false;
+          cb.disabled = true;
+          cb.setAttribute('aria-label', `${item.name} — already in your list`);
+          const lbl = document.createElement('label');
+          lbl.textContent = `${item.name} (already in your list)`;
+          li.appendChild(cb);
+          li.appendChild(lbl);
+          ul.appendChild(li);
+        }
+
+        section.appendChild(ul);
+        dialog.appendChild(section);
+      }
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+
+    const handleKeyDown = (/** @type {KeyboardEvent} */ e) => {
+      if (e.key === 'Escape') close();
+    };
+    const close = () => {
+      overlay.remove();
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', handleKeyDown);
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'modal-cancel-btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', close);
+    actions.appendChild(cancelBtn);
+
+    if (newItems.length > 0) {
+      const importBtn = document.createElement('button');
+      importBtn.type = 'button';
+      importBtn.className = 'modal-import-btn';
+      importBtn.textContent = 'Import selected';
+      importBtn.addEventListener('click', () => {
+        const checkboxes = /** @type {NodeListOf<HTMLInputElement>} */ (
+          dialog.querySelectorAll('.import-item input[type="checkbox"]:checked:not(:disabled)')
+        );
+        let changed = false;
+        for (const cb of checkboxes) {
+          const name = cb.dataset.name ?? '';
+          const category = /** @type {'must-have'|'nice-to-have'} */ (cb.dataset.category ?? '');
+          if (!name || !CATEGORIES.includes(category)) continue;
+          const dup = state.items.find(
+            (i) => i.category === category && i.name.toLowerCase() === name.toLowerCase(),
+          );
+          if (dup) continue;
+          state.items.push({
+            id: cryptoRandomId(),
+            name,
+            category,
+            custom: true,
+            checked: false,
+          });
+          changed = true;
+        }
+        if (changed) {
+          saveState(state, storage);
+          render();
+        }
+        close();
+      });
+      actions.appendChild(importBtn);
+    }
+
+    dialog.appendChild(actions);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const firstFocusable = /** @type {HTMLElement|null} */ (
+      dialog.querySelector('input[type="checkbox"]:not(:disabled), button')
+    );
+    if (firstFocusable) firstFocusable.focus();
   }
 
   /** @param {Item} item */
