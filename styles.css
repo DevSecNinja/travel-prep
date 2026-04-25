@@ -17,6 +17,9 @@
   --radius: 14px;
   --radius-lg: 22px;
   --focus: 0 0 0 3px rgba(95, 196, 255, 0.55);
+  /* Background for the iOS status-bar / Dynamic Island area; matches
+     <meta name="theme-color"> in index.html. */
+  --bar-bg: #fcb6c8;
   color-scheme: light;
 }
 
@@ -41,6 +44,7 @@
     --success: #6cdcae;
     --border: rgba(255, 255, 255, 0.12);
     --shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    --bar-bg: #1f1638;
     color-scheme: dark;
   }
 }
@@ -60,6 +64,7 @@
   --success: #6cdcae;
   --border: rgba(255, 255, 255, 0.12);
   --shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  --bar-bg: #1f1638;
   color-scheme: dark;
 }
 
@@ -77,8 +82,11 @@ body {
 }
 
 html {
-  padding-top: env(safe-area-inset-top);
-  background-color: var(--bg-1);
+  /* Ensures the area behind the iOS status bar / Dynamic Island
+     (shown when using apple-mobile-web-app-status-bar-style=black-translucent)
+     takes on the app's theme color instead of falling back to white. The
+     value matches the <meta name="theme-color"> values in index.html. */
+  background-color: var(--bar-bg);
 }
 
 body {
@@ -129,7 +137,11 @@ button {
 .app {
   max-width: 720px;
   margin: 0 auto;
-  padding: 1.5rem 1rem 4rem;
+  /* Add safe-area insets so content stays below the iOS Dynamic Island /
+     status bar at the top, and clear of the home indicator at the bottom,
+     when running as a PWA with viewport-fit=cover. */
+  padding: calc(1.5rem + env(safe-area-inset-top)) 1rem
+    calc(4rem + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
