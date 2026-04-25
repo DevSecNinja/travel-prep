@@ -77,6 +77,18 @@ the user's `checked` flags and any custom items.
 - `src/main.js` listens for `updatefound` and reloads the page once the new
   SW activates, so users always see the latest version without manually
   refreshing.
+- `service-worker.js` serves `src/*.js` files with a **network-first**
+  strategy (falling back to cache when offline). This ensures that `main.js`
+  is always re-fetched when the device is online, which is critical on iOS:
+  if `main.js` were served from cache it would register the *old* SW URL and
+  iOS's HTTP cache would prevent the new SW script from ever being fetched.
+- A `controllerchange` listener in `src/main.js` reloads the page when a new
+  SW takes control via `clients.claim()`. This is the most reliable update
+  signal on iOS PWAs, where the `updatefound`/`statechange` path can be
+  silently skipped after a hard close.
+- A `visibilitychange` listener calls `reg.update()` whenever the PWA window
+  is foregrounded, so updates are detected promptly without waiting for the
+  hourly polling interval.
 
 ## Deployment
 
