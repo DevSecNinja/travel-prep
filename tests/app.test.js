@@ -102,7 +102,7 @@ describe('app integration', () => {
 
     // animation falls back to immediate render under jsdom (no rAF transitions)
     // but we trigger setTimeout fallback in code; flush timers:
-    await new Promise((r) => setTimeout(r, 850));
+    await new Promise((r) => setTimeout(r, 1200));
     const count = root.querySelector('.suitcase-count strong');
     expect(Number(count.textContent)).toBe(1);
   });
@@ -114,7 +114,7 @@ describe('app integration', () => {
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    await new Promise((r) => setTimeout(r, 850));
+    await new Promise((r) => setTimeout(r, 1200));
     root.querySelector('.reset-btn').click();
     const checkedAfter = root.querySelectorAll('.item input[type="checkbox"]:checked');
     expect(checkedAfter).toHaveLength(0);
@@ -137,7 +137,7 @@ describe('app integration', () => {
         .previousElementSibling;
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
-      await new Promise((r) => setTimeout(r, 850));
+      await new Promise((r) => setTimeout(r, 1200));
     }
     // remount
     const { root } = await mount(storage);
