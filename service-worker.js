@@ -76,9 +76,11 @@ async function networkFirst(req) {
   } catch {
     const cached = await cache.match(req);
     if (cached) return cached;
-    // Last-resort fallback for navigations.
-    const shell = await cache.match('./index.html');
-    if (shell) return shell;
+    // Last-resort fallback for navigations: try to match the root index.
+    const fallback =
+      await cache.match(new URL('./index.html', self.location.href).href) ??
+      await cache.match('./');
+    if (fallback) return fallback;
     throw new Error('offline-and-not-cached');
   }
 }
@@ -87,7 +89,12 @@ async function cacheFirst(req) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(req);
   if (cached) return cached;
-  const fresh = await fetch(req);
-  if (fresh.ok) cache.put(req, fresh.clone());
-  return fresh;
+  try {
+    const fresh = await fetch(req);
+    if (fresh.ok) cache.put(req, fresh.clone());
+    return fresh;
+  } catch {
+    // Offline and not in cache — nothing we can do for non-navigation requests.
+    return new Response('', { status: 503, statusText: 'Service Unavailable' });
+  }
 }

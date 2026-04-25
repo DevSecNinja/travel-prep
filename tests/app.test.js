@@ -148,6 +148,52 @@ describe('app integration', () => {
     expect(sun.previousElementSibling.checked).toBe(true);
   });
 
+  it('"Check all" marks every item as checked', async () => {
+    const { root, storage } = await mount();
+    root.querySelector('.check-all-btn').click();
+    const checkedAfter = root.querySelectorAll('.item input[type="checkbox"]:checked');
+    const allItems = root.querySelectorAll('.item input[type="checkbox"]');
+    expect(checkedAfter).toHaveLength(allItems.length);
+    // Persisted to storage too
+    const saved = JSON.parse(storage.getItem(STORAGE_KEY));
+    expect(saved.items.every((i) => i.checked)).toBe(true);
+  });
+
+  it('stores new items in lowercase regardless of input case', async () => {
+    const { root, storage } = await mount();
+    const input = root.querySelector('#new-item-name');
+    const form = root.querySelector('.add-form');
+    input.value = 'SunGlAsSeS';
+    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    const labels = Array.from(root.querySelectorAll('.item label')).map((l) => l.textContent);
+    expect(labels).toContain('sunglasses');
+    const saved = JSON.parse(storage.getItem(STORAGE_KEY));
+    const added = saved.items.find((i) => i.name === 'sunglasses');
+    expect(added).toBeTruthy();
+  });
+
+  it('renders a footer with build id', async () => {
+    const { root } = await mount();
+    const footer = root.querySelector('.app-footer');
+    expect(footer).toBeTruthy();
+    expect(footer.textContent).toContain('Travel Prep');
+  });
+
+  it('renders a footer with a real commit hash link when buildId is provided', async () => {
+    document.body.innerHTML = '<main id="app"></main>';
+    const r = document.getElementById('app');
+    await initApp(r, {
+      storage: memStorage(),
+      fetchYaml: async () => YAML,
+      buildId: 'abc123def456-20240101120000',
+    });
+    const footer = r.querySelector('.app-footer');
+    expect(footer).toBeTruthy();
+    const link = footer.querySelector('a');
+    expect(link.href).toContain('abc123def456');
+    expect(link.textContent).toBe('abc123def456');
+  });
+
   it('theme selection is saved and reflected on documentElement', async () => {
     const { root, storage } = await mount();
     const select = root.querySelector('.theme-select select');
