@@ -1,0 +1,21 @@
+{
+  "name": "travel-prep",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Travel packing list PWA — never forget your essentials",
+  "scripts": {
+    "test": "jest --verbose",
+    "test:unit": "jest --verbose --testPathPatterns=tests/unit",
+    "test:html": "jest --verbose --testPathPatterns=tests/html-validation",
+    "test:a11y": "jest --verbose --testPathPatterns=tests/accessibility",
+    "test:pwa": "jest --verbose --testPathPatterns=tests/pwa",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "axe-core": "^4.9.0",
+    "html-validate": "^10.0.0",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.2.0"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "Travel Prep",
+  "short_name": "Travel Prep",
+  "description": "A colorful packing list app to prepare for your next trip. Never forget your essentials!",
+  "start_url": "/travel-prep/",
+  "scope": "/travel-prep/",
+  "display": "standalone",
+  "background_color": "#f0f4ff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "categories": ["travel", "utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

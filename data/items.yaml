@@ -1,0 +1,15 @@
+categories:
+  - name: Must-Have
+    emoji: "🔴"
+    items:
+      - passport
+      - toothbrush
+      - toothpaste
+      - socks
+      - underwear
+
+  - name: Nice-to-Have
+    emoji: "🟡"
+    items:
+      - sunscreen
+      - umbrella

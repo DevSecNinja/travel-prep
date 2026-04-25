@@ -1,0 +1,104 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run HTML validation tests
+        run: npm run test:html
+
+      - name: Run accessibility tests
+        run: npm run test:a11y
+
+      - name: Run PWA tests
+        run: npm run test:pwa
+
+      - name: Install Playwright WebKit browser
+        run: npx playwright install webkit --with-deps
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Auto-update service worker cache version
+        run: |
+          set -euo pipefail
+          VERSION="sha-${GITHUB_SHA::7}"
+          echo "Setting service worker CACHE_NAME to travel-prep-${VERSION}"
+          sed -i -E "s|const CACHE_NAME = 'travel-prep-[^']+';|const CACHE_NAME = 'travel-prep-${VERSION}';|" sw.js
+          grep "const CACHE_NAME" sw.js
+
+      - name: Auto-update footer commit SHA
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "Setting footer commit SHA to ${SHORT_SHA}"
+          sed -i -E 's|(<span class="commit-sha" id="commitSha">)dev(</span>)|\1'"${SHORT_SHA}"'\2|' index.html
+          grep 'id="commitSha"' index.html
+
+      - name: Auto-update sitemap lastmod date
+        run: |
+          set -euo pipefail
+          TODAY="$(date -u +%Y-%m-%d)"
+          echo "Setting sitemap lastmod to ${TODAY}"
+          sed -i -E "s|<lastmod>[0-9]{4}-[0-9]{2}-[0-9]{2}</lastmod>|<lastmod>${TODAY}</lastmod>|" sitemap.xml
+          grep "lastmod" sitemap.xml
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

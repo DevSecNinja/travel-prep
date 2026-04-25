@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Travel Prep — Packing List</title>
+  <meta name="description" content="A colorful packing list app to prepare for your next flight, train or car trip. Never forget your essentials!">
+  <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#312e81" media="(prefers-color-scheme: dark)">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Travel Prep">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ───────────────────────── CSS Reset & Variables ───────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Light theme (default) */
+      --bg-primary: #f0f4ff;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-bg: #eef2ff;
+      --must-have: #ef4444;
+      --must-have-bg: #fef2f2;
+      --must-have-border: #fecaca;
+      --nice-have: #f59e0b;
+      --nice-have-bg: #fffbeb;
+      --nice-have-border: #fde68a;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --suitcase-bg: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #6366f1 100%);
+      --suitcase-inner: #eef2ff;
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #818cf8;
+      --accent-light: #a5b4fc;
+      --accent-bg: #1e1b4b;
+      --must-have: #f87171;
+      --must-have-bg: #451a1a;
+      --must-have-border: #7f1d1d;
+      --nice-have: #fbbf24;
+      --nice-have-bg: #451a03;
+      --nice-have-border: #78350f;
+      --success: #34d399;
+      --success-bg: #064e3b;
+      --border: #334155;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --suitcase-bg: linear-gradient(135deg, #4c1d95 0%, #3730a3 50%, #312e81 100%);
+      --suitcase-inner: #1e1b4b;
+      color-scheme: dark;
+    }
+
+    /* ───────────────────────── Base Styles ───────────────────────── */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100dvh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ───────────────────────── Header ───────────────────────── */
+    header {
+      text-align: center;
+      padding: 24px 16px;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    header h1 .logo-emoji {
+      font-size: 2rem;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-size: 0.95rem;
+    }
+
+    /* ───────────────────────── Theme Toggle ───────────────────────── */
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s ease, background-color 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .theme-toggle:hover { transform: scale(1.1); }
+    .theme-toggle:active { transform: scale(0.95); }
+
+    /* ───────────────────────── Suitcase Area ───────────────────────── */
+    .suitcase-area {
+      background: var(--suitcase-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      min-height: 120px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .suitcase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .suitcase-title {
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .suitcase-count {
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
+    .suitcase-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .suitcase-item {
+      background: rgba(255,255,255,0.2);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+      animation: dropIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .suitcase-item:hover {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.05);
+    }
+
+    .suitcase-empty {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 16px;
+      font-style: italic;
+    }
+
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-20px) scale(0.8); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ───────────────────────── Progress Bar ───────────────────────── */
+    .progress-section {
+      margin-bottom: 20px;
+    }
+
+    .progress-bar-bg {
+      background: var(--border);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 20px;
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 0%;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* ───────────────────────── Action Buttons ───────────────────────── */
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-light);
+    }
+
+    .btn-danger {
+      color: var(--must-have);
+      border-color: var(--must-have-border);
+    }
+
+    .btn-danger:hover {
+      background: var(--must-have-bg);
+    }
+
+    /* ───────────────────────── Add Item Form ───────────────────────── */
+    .add-item-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .add-item-form input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .add-item-form input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    .add-item-form input[type="text"]::placeholder {
+      color: var(--text-muted);
+    }
+
+    .add-item-form select {
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .add-item-form select:focus {
+      border-color: var(--accent);
+    }
+
+    /* ───────────────────────── Category Sections ───────────────────────── */
+    .category {
+      margin-bottom: 24px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .category-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .category-must-have .category-badge {
+      background: var(--must-have-bg);
+      color: var(--must-have);
+      border: 1px solid var(--must-have-border);
+    }
+
+    .category-nice-have .category-badge {
+      background: var(--nice-have-bg);
+      color: var(--nice-have);
+      border: 1px solid var(--nice-have-border);
+    }
+
+    /* ───────────────────────── Item Cards ───────────────────────── */
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      position: relative;
+    }
+
+    .item-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateX(2px);
+    }
+
+    .item-card.checked {
+      animation: packItem 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .item-card.checked .item-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    @keyframes packItem {
+      0%   { opacity: 1; transform: scale(1); }
+      50%  { opacity: 0.6; transform: scale(0.95) translateX(10px); }
+      100% { opacity: 0.5; transform: scale(0.98) translateX(0); }
+    }
+
+    .item-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .item-card.checked .item-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .item-checkbox svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+      stroke-width: 2.5;
+      fill: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .item-card.checked .item-checkbox svg {
+      opacity: 1;
+    }
+
+    .item-name {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-transform: capitalize;
+      transition: color 0.2s ease;
+    }
+
+    .item-delete {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: all 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .item-card:hover .item-delete,
+    .item-card .item-delete:focus {
+      opacity: 1;
+    }
+
+    .item-delete:hover {
+      color: var(--must-have);
+      background: var(--must-have-bg);
+    }
+
+    .item-user-badge {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ───────────────────────── Footer ───────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ───────────────────────── Update Banner ───────────────────────── */
+    .update-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .update-banner.visible { display: block; }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+      to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    /* ───────────────────────── Responsive ───────────────────────── */
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.5rem; }
+      .container { padding: 12px; }
+      .add-item-form { flex-wrap: wrap; }
+      .add-item-form select { flex: 1; min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle -->
+  <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle theme">
+    <span id="themeIcon">🌙</span>
+  </button>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1><span class="logo-emoji">🧳</span> Travel Prep</h1>
+      <p>Pack smart, travel happy</p>
+    </header>
+
+    <!-- Suitcase -->
+    <div class="suitcase-area" id="suitcaseArea" role="region" aria-label="Packed items suitcase">
+      <div class="suitcase-header">
+        <span class="suitcase-title">🧳 Packed</span>
+        <span class="suitcase-count" id="suitcaseCount">0 items</span>
+      </div>
+      <div class="suitcase-items" id="suitcaseItems">
+        <div class="suitcase-empty" id="suitcaseEmpty">Check off items below to pack them!</div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-section" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressSection">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text">
+        <span id="progressLabel">0 of 0 packed</span>
+        <span id="progressPercent">0%</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button type="button" class="btn btn-danger" id="uncheckAllBtn" aria-label="Uncheck all items">
+        ↩️ Uncheck All
+      </button>
+    </div>
+
+    <!-- Add Item Form -->
+    <form class="add-item-form" id="addItemForm" aria-label="Add new item">
+      <input type="text" id="newItemInput" placeholder="Add a new item…" aria-label="New item name" required maxlength="100">
+      <select id="newItemCategory" aria-label="Item category">
+        <option value="Must-Have">Must-Have</option>
+        <option value="Nice-to-Have">Nice-to-Have</option>
+      </select>
+      <button type="submit" class="btn btn-accent" aria-label="Add item">+ Add</button>
+    </form>
+
+    <!-- Packing Lists -->
+    <section id="packingLists" aria-label="Packing list">
+      <!-- Categories are rendered by JS -->
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>Travel Prep &mdash; built with ❤️ for travelers everywhere</p>
+      <p>Version: <span class="commit-sha" id="commitSha">dev</span></p>
+    </footer>
+  </div>
+
+  <!-- Update Banner -->
+  <div class="update-banner" id="updateBanner" role="alert">
+    🔄 New version available — tap to update
+  </div>
+
+  <script>
+    /* ================================================================
+       Travel Prep — Packing List Application
+       Plain JavaScript, no frameworks.
+       ================================================================ */
+
+    (function () {
+      'use strict';
+
+      // ─── Constants ───────────────────────────────────────────────
+      const STORAGE_KEY = 'travel-prep-data';
+      const THEME_KEY   = 'travel-prep-theme';
+
+      // Default items (matches data/items.yaml)
+      const DEFAULT_ITEMS = {
+        categories: [
+          {
+            name: 'Must-Have',
+            emoji: '🔴',
+            items: ['passport', 'toothbrush', 'toothpaste', 'socks', 'underwear']
+          },
+          {
+            name: 'Nice-to-Have',
+            emoji: '🟡',
+            items: ['sunscreen', 'umbrella']
+          }
+        ]
+      };
+
+      // ─── State ───────────────────────────────────────────────────
+      let state = loadState();
+
+      // ─── DOM Refs ────────────────────────────────────────────────
+      const packingLists    = document.getElementById('packingLists');
+      const suitcaseItems   = document.getElementById('suitcaseItems');
+      const suitcaseEmpty   = document.getElementById('suitcaseEmpty');
+      const suitcaseCount   = document.getElementById('suitcaseCount');
+      const progressFill    = document.getElementById('progressFill');
+      const progressLabel   = document.getElementById('progressLabel');
+      const progressPercent = document.getElementById('progressPercent');
+      const progressSection = document.getElementById('progressSection');
+      const addItemForm     = document.getElementById('addItemForm');
+      const newItemInput    = document.getElementById('newItemInput');
+      const newItemCategory = document.getElementById('newItemCategory');
+      const uncheckAllBtn   = document.getElementById('uncheckAllBtn');
+      const themeToggle     = document.getElementById('themeToggle');
+      const themeIcon       = document.getElementById('themeIcon');
+      const updateBanner    = document.getElementById('updateBanner');
+
+      // ─── YAML Fetch (with fallback) ─────────────────────────────
+      async function fetchYAMLDefaults() {
+        try {
+          const resp = await fetch('data/items.yaml');
+          if (!resp.ok) return null;
+          const text = await resp.text();
+          return parseSimpleYAML(text);
+        } catch {
+          return null;
+        }
+      }
+
+      /**
+       * Minimal YAML parser for our simple structure.
+       * Handles the categories/items format in data/items.yaml.
+       */
+      function parseSimpleYAML(text) {
+        const lines = text.split('\n');
+        const result = { categories: [] };
+        let currentCategory = null;
+        let inItems = false;
+
+        for (const rawLine of lines) {
+          const line = rawLine.trimEnd();
+          if (!line || line.startsWith('#')) continue;
+
+          // Category name
+          const nameMatch = line.match(/^\s+-\s+name:\s*(.+)/);
+          if (nameMatch) {
+            currentCategory = { name: nameMatch[1].trim().replace(/^["']|["']$/g, ''), emoji: '', items: [] };
+            result.categories.push(currentCategory);
+            inItems = false;
+            continue;
+          }
+
+          // Category emoji
+          const emojiMatch = line.match(/^\s+emoji:\s*["']?([^"']+)["']?/);
+          if (emojiMatch && currentCategory) {
+            currentCategory.emoji = emojiMatch[1].trim();
+            continue;
+          }
+
+          // Items array marker
+          if (line.match(/^\s+items:/)) {
+            inItems = true;
+            continue;
+          }
+
+          // Item entry
+          const itemMatch = line.match(/^\s+-\s+(.+)/);
+          if (itemMatch && inItems && currentCategory) {
+            currentCategory.items.push(itemMatch[1].trim().replace(/^["']|["']$/g, ''));
+            continue;
+          }
+
+          // If we hit a non-indented line, reset
+          if (!line.startsWith(' ') && !line.startsWith('-')) {
+            inItems = false;
+          }
+        }
+
+        return result.categories.length > 0 ? result : null;
+      }
+
+      // ─── State Management ────────────────────────────────────────
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            // Validate structure
+            if (parsed && Array.isArray(parsed.categories)) {
+              return parsed;
+            }
+          }
+        } catch { /* ignore */ }
+
+        // Return deep copy of defaults
+        return JSON.parse(JSON.stringify(DEFAULT_ITEMS));
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch { /* quota exceeded — ignore */ }
+      }
+
+      // ─── Render ──────────────────────────────────────────────────
+      function render() {
+        renderCategories();
+        renderSuitcase();
+        renderProgress();
+        saveState();
+      }
+
+      function renderCategories() {
+        packingLists.innerHTML = '';
+
+        for (const category of state.categories) {
+          const section = document.createElement('div');
+          section.className = 'category ' +
+            (category.name === 'Must-Have' ? 'category-must-have' : 'category-nice-have');
+
+          const header = document.createElement('div');
+          header.className = 'category-header';
+          header.innerHTML = `
+            <span>${category.emoji || ''} ${category.name}</span>
+            <span class="category-badge">${category.items.length} item${category.items.length !== 1 ? 's' : ''}</span>
+          `;
+          section.appendChild(header);
+
+          const list = document.createElement('div');
+          list.className = 'item-list';
+          list.setAttribute('role', 'list');
+
+          for (let i = 0; i < category.items.length; i++) {
+            const item = category.items[i];
+            const itemName = typeof item === 'string' ? item : item.name;
+            const isChecked = typeof item === 'string' ? false : !!item.checked;
+            const isUserAdded = typeof item === 'string' ? false : !!item.userAdded;
+
+            const card = document.createElement('div');
+            card.className = 'item-card' + (isChecked ? ' checked' : '');
+            card.setAttribute('role', 'listitem');
+            card.setAttribute('data-category', category.name);
+            card.setAttribute('data-index', i);
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', `${itemName}${isChecked ? ' (packed)' : ' (not packed)'}`);
+
+            card.innerHTML = `
+              <div class="item-checkbox" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span class="item-name">${escapeHTML(itemName)}</span>
+              ${isUserAdded ? '<span class="item-user-badge">custom</span>' : ''}
+              <button class="item-delete" aria-label="Delete ${escapeHTML(itemName)}" title="Delete item">&times;</button>
+            `;
+
+            // Toggle check on card click
+            card.addEventListener('click', (e) => {
+              if (e.target.closest('.item-delete')) return;
+              toggleItem(category.name, i);
+            });
+
+            // Keyboard support
+            card.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (e.target.closest('.item-delete')) return;
+                toggleItem(category.name, i);
+              }
+            });
+
+            // Delete button
+            const deleteBtn = card.querySelector('.item-delete');
+            deleteBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deleteItem(category.name, i);
+            });
+
+            list.appendChild(card);
+          }
+
+          section.appendChild(list);
+          packingLists.appendChild(section);
+        }
+      }
+
+      function renderSuitcase() {
+        const checkedItems = getAllCheckedItems();
+        suitcaseItems.innerHTML = '';
+
+        if (checkedItems.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'suitcase-empty';
+          empty.id = 'suitcaseEmpty';
+          empty.textContent = 'Check off items below to pack them!';
+          suitcaseItems.appendChild(empty);
+        } else {
+          for (const item of checkedItems) {
+            const chip = document.createElement('span');
+            chip.className = 'suitcase-item';
+            chip.textContent = item.name;
+            chip.title = 'Click to unpack';
+            chip.setAttribute('tabindex', '0');
+            chip.setAttribute('role', 'button');
+            chip.setAttribute('aria-label', `Unpack ${item.name}`);
+            chip.addEventListener('click', () => {
+              uncheckItemByName(item.name, item.category);
+            });
+            chip.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                uncheckItemByName(item.name, item.category);
+              }
+            });
+            suitcaseItems.appendChild(chip);
+          }
+        }
+
+        const count = checkedItems.length;
+        suitcaseCount.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+      }
+
+      function renderProgress() {
+        const total = getTotalItemCount();
+        const checked = getAllCheckedItems().length;
+        const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+        progressFill.style.width = percent + '%';
+        progressLabel.textContent = `${checked} of ${total} packed`;
+        progressPercent.textContent = percent + '%';
+        progressSection.setAttribute('aria-valuenow', percent);
+      }
+
+      // ─── Item Actions ────────────────────────────────────────────
+      function toggleItem(categoryName, index) {
+        const category = state.categories.find(c => c.name === categoryName);
+        if (!category) return;
+
+        let item = category.items[index];
+        if (typeof item === 'string') {
+          category.items[index] = { name: item, checked: true, userAdded: false };
+        } else {
+          item.checked = !item.checked;
+        }
+        render();
+      }
+
+      function uncheckItemByName(name, categoryName) {
+        const category = state.categories.find(c => c.name === categoryName);
+        if (!category) return;
+
+        for (let i = 0; i < category.items.length; i++) {
+          const item = category.items[i];
+          const itemName = typeof item === 'string' ? item : item.name;
+          if (itemName === name) {
+            if (typeof item === 'string') return; // already unchecked
+            item.checked = false;
+            break;
+          }
+        }
+        render();
+      }
+
+      function uncheckAll() {
+        for (const category of state.categories) {
+          for (let i = 0; i < category.items.length; i++) {
+            const item = category.items[i];
+            if (typeof item !== 'string' && item.checked) {
+              item.checked = false;
+            }
+          }
+        }
+        render();
+      }
+
+      function addItem(name, categoryName) {
+        name = name.trim();
+        if (!name) return;
+
+        let category = state.categories.find(c => c.name === categoryName);
+        if (!category) {
+          category = { name: categoryName, emoji: categoryName === 'Must-Have' ? '🔴' : '🟡', items: [] };
+          state.categories.push(category);
+        }
+
+        // Check for duplicates
+        const exists = category.items.some(item => {
+          const itemName = typeof item === 'string' ? item : item.name;
+          return itemName.toLowerCase() === name.toLowerCase();
+        });
+        if (exists) return;
+
+        category.items.push({ name: name, checked: false, userAdded: true });
+        render();
+      }
+
+      function deleteItem(categoryName, index) {
+        const category = state.categories.find(c => c.name === categoryName);
+        if (!category) return;
+        category.items.splice(index, 1);
+        render();
+      }
+
+      // ─── Helpers ─────────────────────────────────────────────────
+      function getAllCheckedItems() {
+        const items = [];
+        for (const category of state.categories) {
+          for (const item of category.items) {
+            if (typeof item !== 'string' && item.checked) {
+              items.push({ name: item.name, category: category.name });
+            }
+          }
+        }
+        return items;
+      }
+
+      function getTotalItemCount() {
+        let count = 0;
+        for (const category of state.categories) {
+          count += category.items.length;
+        }
+        return count;
+      }
+
+      function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // ─── Theme ───────────────────────────────────────────────────
+      const THEME_MODES = ['auto', 'light', 'dark'];
+      let currentThemeMode = loadTheme();
+
+      function loadTheme() {
+        try {
+          return localStorage.getItem(THEME_KEY) || 'auto';
+        } catch { return 'auto'; }
+      }
+
+      function applyTheme(mode) {
+        currentThemeMode = mode;
+        try { localStorage.setItem(THEME_KEY, mode); } catch {}
+
+        if (mode === 'auto') {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+          themeIcon.textContent = '🌓';
+        } else if (mode === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          themeIcon.textContent = '🌙';
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+          themeIcon.textContent = '☀️';
+        }
+      }
+
+      function cycleTheme() {
+        const idx = THEME_MODES.indexOf(currentThemeMode);
+        const next = THEME_MODES[(idx + 1) % THEME_MODES.length];
+        applyTheme(next);
+      }
+
+      // Listen for system theme changes (for auto mode)
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (currentThemeMode === 'auto') applyTheme('auto');
+      });
+
+      // ─── Event Listeners ─────────────────────────────────────────
+      themeToggle.addEventListener('click', cycleTheme);
+
+      uncheckAllBtn.addEventListener('click', uncheckAll);
+
+      addItemForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = newItemInput.value.trim();
+        const category = newItemCategory.value;
+        if (name) {
+          addItem(name, category);
+          newItemInput.value = '';
+          newItemInput.focus();
+        }
+      });
+
+      // ─── Service Worker ──────────────────────────────────────────
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+          console.log('[App] Service worker registered');
+
+          // Check for updates
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available
+                updateBanner.classList.add('visible');
+              }
+            });
+          });
+        }).catch((err) => {
+          console.log('[App] Service worker registration failed:', err);
+        });
+
+        // Refresh when new SW takes over
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
+        // Update banner click
+        updateBanner.addEventListener('click', () => {
+          navigator.serviceWorker.ready.then((reg) => {
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      }
+
+      // ─── Initialize ──────────────────────────────────────────────
+      async function init() {
+        // Try to load YAML defaults if no saved state exists
+        const hasSavedState = (() => {
+          try { return !!localStorage.getItem(STORAGE_KEY); } catch { return false; }
+        })();
+
+        if (!hasSavedState) {
+          const yamlData = await fetchYAMLDefaults();
+          if (yamlData) {
+            state = yamlData;
+          }
+        }
+
+        applyTheme(currentThemeMode);
+        render();
+      }
+
+      init();
+
+      // Expose for testing
+      if (typeof window !== 'undefined') {
+        window.__travelPrep = {
+          parseSimpleYAML,
+          DEFAULT_ITEMS,
+          getState: () => state,
+          setState: (s) => { state = s; render(); },
+          render,
+          uncheckAll,
+          addItem,
+          deleteItem,
+          toggleItem,
+          escapeHTML,
+        };
+      }
+    })();
+  </script>
+</body>
+</html>
