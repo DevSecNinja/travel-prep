@@ -99,7 +99,7 @@ export async function initApp(root, opts = {}) {
     nameInput.addEventListener('input', () => {
       const pos = nameInput.selectionStart;
       nameInput.value = nameInput.value.toLowerCase();
-      nameInput.setSelectionRange(pos, pos);
+      if (pos !== null) nameInput.setSelectionRange(pos, pos);
     });
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -145,6 +145,8 @@ export async function initApp(root, opts = {}) {
     // Footer
     const footer = document.createElement('footer');
     footer.className = 'app-footer';
+    // BUILD_ID format set by deploy.yml: '<12-char-sha>-<YYYYMMDDHHmmss>'
+    // e.g. 'abc123def456-20240101120000'
     const shortHash = buildId.includes('-') ? buildId.split('-')[0] : buildId;
     const isPlaceholder = shortHash === '__BUILD_ID__';
     footer.innerHTML = isPlaceholder

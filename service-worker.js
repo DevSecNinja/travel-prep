@@ -76,9 +76,11 @@ async function networkFirst(req) {
   } catch {
     const cached = await cache.match(req);
     if (cached) return cached;
-    // Last-resort fallback for navigations: try to match the root index.
+    // Last-resort fallback for navigations: try absolute URL first, then
+    // the relative path used when adding to the cache, then the root.
     const fallback =
       await cache.match(new URL('./index.html', self.location.href).href) ??
+      await cache.match('./index.html') ??
       await cache.match('./');
     if (fallback) return fallback;
     throw new Error('offline-and-not-cached');
