@@ -422,9 +422,10 @@ button {
 /* ---------- Footer ---------- */
 .app-footer {
   text-align: center;
-  padding: 1rem 0 0.5rem;
+  padding: 1.5rem 1rem 0.5rem;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
 }
 
 .app-footer p {
@@ -432,12 +433,70 @@ button {
 }
 
 .app-footer a {
-  color: var(--text-muted);
+  color: var(--primary);
   text-decoration: none;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-weight: 500;
 }
 
 .app-footer a:hover {
   color: var(--primary);
   text-decoration: underline;
+}
+
+.commit-sha {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.commit-sha a {
+  color: var(--text-muted);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-weight: normal;
+}
+
+.github-star {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.github-star-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin: 0.5rem 0;
+  box-shadow: var(--shadow);
+}
+
+.github-star-button:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(82, 64, 138, 0.22);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.github-star-icon {
+  font-size: 1rem;
+  color: #FFB300;
+}
+
+.github-star-cta {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
 }

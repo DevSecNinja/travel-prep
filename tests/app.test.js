@@ -189,9 +189,30 @@ describe('app integration', () => {
     });
     const footer = r.querySelector('.app-footer');
     expect(footer).toBeTruthy();
-    const link = footer.querySelector('a');
+    const link = footer.querySelector('.commit-link');
     expect(link.href).toContain('abc123def456');
     expect(link.textContent).toBe('abc123def456');
+  });
+
+  it('renders a GitHub star button in the footer', async () => {
+    const { root } = await mount();
+    const footer = root.querySelector('.app-footer');
+    expect(footer).toBeTruthy();
+    const starButton = footer.querySelector('.github-star-button');
+    expect(starButton).toBeTruthy();
+    expect(starButton.href).toContain('github.com/DevSecNinja/travel-prep');
+    expect(footer.querySelector('.github-star-icon')).toBeTruthy();
+    expect(footer.querySelector('#starCountText')).toBeTruthy();
+    expect(footer.querySelector('.github-star-cta')).toBeTruthy();
+  });
+
+  it('renders a DevSecNinja link in the footer', async () => {
+    const { root } = await mount();
+    const footer = root.querySelector('.app-footer');
+    expect(footer).toBeTruthy();
+    const links = Array.from(footer.querySelectorAll('a'));
+    const devSecNinjaLink = links.find((a) => a.href.includes('github.com/DevSecNinja'));
+    expect(devSecNinjaLink).toBeTruthy();
   });
 
   it('theme selection is saved and reflected on documentElement', async () => {
