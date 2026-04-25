@@ -48,6 +48,7 @@ export async function initApp(root, opts = {}) {
   let cachedStarCount = /** @type {number|null} */ (null);
 
   render();
+  fetchGitHubStars();
 
   // ----- Rendering -----------------------------------------------------------
 
@@ -428,8 +429,6 @@ export async function initApp(root, opts = {}) {
     // Safety net in case transitionend doesn't fire.
     setTimeout(cleanup, 1100);
   }
-
-  fetchGitHubStars();
 
   // ----- Theme ---------------------------------------------------------------
 
