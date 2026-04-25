@@ -31,7 +31,7 @@ export async function initApp(root, opts = {}) {
   const fetchYaml =
     opts.fetchYaml ??
     (async () => {
-      const res = await fetch('./data/items.yaml', { cache: 'no-cache' });
+      const res = await fetch('./data/items.yaml');
       if (!res.ok) throw new Error(`Failed to load items.yaml: ${res.status}`);
       return res.text();
     });

@@ -71,7 +71,7 @@ async function networkFirst(req) {
   const cache = await caches.open(CACHE_NAME);
   try {
     const fresh = await fetch(req);
-    cache.put(req, fresh.clone());
+    if (fresh.ok) cache.put(req, fresh.clone());
     return fresh;
   } catch {
     const cached = await cache.match(req);
