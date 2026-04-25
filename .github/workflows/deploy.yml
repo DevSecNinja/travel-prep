@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Stamp build id (busts the service-worker cache on every commit)
+        run: |
+          BUILD_ID="${GITHUB_SHA::12}-$(date -u +%Y%m%d%H%M%S)"
+          echo "Stamping BUILD_ID=$BUILD_ID"
+          # Replace the __BUILD_ID__ placeholder in source files we ship.
+          sed -i "s/__BUILD_ID__/$BUILD_ID/g" service-worker.js src/main.js
+
+      - name: Assemble site directory
+        run: |
+          mkdir -p _site
+          cp -r index.html styles.css manifest.webmanifest service-worker.js src data icons _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
