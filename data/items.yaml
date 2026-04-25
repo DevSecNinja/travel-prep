@@ -1,0 +1,12 @@
+# Default packing list seed data.
+# Two categories: must-have and nice-to-have.
+# Users can add their own items in-app; those are stored in the browser only.
+must-have:
+  - passport
+  - toothbrush
+  - tooth paste
+  - socks
+  - underwear
+nice-to-have:
+  - sunscreen
+  - umbrella
