@@ -10,10 +10,13 @@ import { buildShareUrl, readShareFromHash } from './share.js';
 /** @typedef {import('./storage.js').State} State */
 /** @typedef {import('./storage.js').Item} Item */
 
-const CATEGORIES = /** @type {const} */ (['must-have', 'nice-to-have']);
+const CATEGORIES = /** @type {const} */ (['documents', 'clothing', 'toiletries', 'electronics', 'pre-departure']);
 const CATEGORY_LABELS = {
-  'must-have': 'Must-have',
-  'nice-to-have': 'Nice-to-have',
+  'documents': 'Documents',
+  'clothing': 'Clothing',
+  'toiletries': 'Toiletries',
+  'electronics': 'Electronics',
+  'pre-departure': 'Pre-departure',
 };
 
 /**
@@ -116,9 +119,12 @@ export async function initApp(root, opts = {}) {
       <input id="new-item-name" name="name" type="text" placeholder="Add an item…" required maxlength="80" autocomplete="off" inputmode="text" />
       <label class="visually-hidden" for="new-item-category">Category</label>
       <select id="new-item-category" name="category">
-        <option value="must-have">Must-have</option>
-        <option value="nice-to-have">Nice-to-have</option>
-      </select>
+          <option value="documents">Documents</option>
+          <option value="clothing">Clothing</option>
+          <option value="toiletries">Toiletries</option>
+          <option value="electronics">Electronics</option>
+          <option value="pre-departure">Pre-departure</option>
+        </select>
       <button type="submit">Add</button>
     `;
     const nameInput = /** @type {HTMLInputElement} */ (form.querySelector('#new-item-name'));
@@ -476,7 +482,7 @@ export async function initApp(root, opts = {}) {
         let changed = false;
         for (const cb of checkboxes) {
           const name = cb.dataset.name ?? '';
-          const category = /** @type {'must-have'|'nice-to-have'} */ (cb.dataset.category ?? '');
+          const category = /** @type {'documents'|'clothing'|'toiletries'|'electronics'|'pre-departure'} */ (cb.dataset.category ?? '');
           if (!name || !CATEGORIES.includes(category)) continue;
           const dup = state.items.find(
             (i) => i.category === category && i.name.toLowerCase() === name.toLowerCase(),
@@ -546,7 +552,7 @@ export async function initApp(root, opts = {}) {
 
   /**
    * @param {string} name
-   * @param {'must-have' | 'nice-to-have'} category
+   * @param {'documents' | 'clothing' | 'toiletries' | 'electronics' | 'pre-departure'} category
    */
   function addItem(name, category) {
     const trimmed = name.trim().toLowerCase();

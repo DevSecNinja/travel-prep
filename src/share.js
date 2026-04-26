@@ -3,7 +3,7 @@
  *
  * The URL hash format is:  #share=<base64url>
  * The base64url payload decodes to a JSON array:
- *   [{ n: "<name>", c: "must-have" | "nice-to-have" }, ...]
+ *   [{ n: "<name>", c: "documents" | "clothing" | "toiletries" | "electronics" | "pre-departure" }, ...]
  *
  * Short keys keep URLs compact.
  */

@@ -15,11 +15,16 @@ import { initApp } from '../src/app.js';
 import { STORAGE_KEY } from '../src/storage.js';
 import { encodeSharePayload } from '../src/share.js';
 
-const YAML = `must-have:
+const YAML = `documents:
   - passport
+clothing:
   - socks
-nice-to-have:
+toiletries:
   - umbrella
+electronics:
+  - laptop
+pre-departure:
+  - water plants
 `;
 
 function memStorage() {
@@ -60,9 +65,9 @@ describe('app integration', () => {
 
   it('renders both categories with seed items', async () => {
     const { root } = await mount();
-    expect(root.querySelector('.list-must-have').textContent).toContain('passport');
-    expect(root.querySelector('.list-must-have').textContent).toContain('socks');
-    expect(root.querySelector('.list-nice-to-have').textContent).toContain('umbrella');
+    expect(root.querySelector('.list-documents').textContent).toContain('passport');
+    expect(root.querySelector('.list-clothing').textContent).toContain('socks');
+    expect(root.querySelector('.list-toiletries').textContent).toContain('umbrella');
   });
 
   it('adds a user-entered item to the chosen category', async () => {
@@ -71,10 +76,10 @@ describe('app integration', () => {
     const select = root.querySelector('#new-item-category');
     const form = root.querySelector('.add-form');
     input.value = 'kindle';
-    select.value = 'nice-to-have';
+    select.value = 'electronics';
     form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 
-    expect(root.querySelector('.list-nice-to-have').textContent).toContain('kindle');
+    expect(root.querySelector('.list-electronics').textContent).toContain('kindle');
     // Custom items expose a remove button
     expect(root.querySelector('[aria-label="Remove kindle"]')).toBeTruthy();
   });
@@ -98,7 +103,7 @@ describe('app integration', () => {
 
   it('checking an item updates the suitcase counter', async () => {
     const { root } = await mount();
-    const cb = root.querySelector('.list-must-have .item input[type="checkbox"]');
+    const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
     cb.checked = true;
     cb.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -279,8 +284,8 @@ describe('app integration', () => {
 
   it('opening with a #share= hash shows an import dialog', async () => {
     const sharedItems = [
-      { name: 'kindle', category: 'nice-to-have' },
-      { name: 'travel pillow', category: 'must-have' },
+      { name: 'kindle', category: 'electronics' },
+      { name: 'travel pillow', category: 'clothing' },
     ];
     const hash = '#share=' + encodeSharePayload(sharedItems);
     await mount(memStorage(), hash);
@@ -296,8 +301,8 @@ describe('app integration', () => {
   it('import dialog marks items already in the list as existing', async () => {
     // 'passport' is in the default YAML, so it should be marked as existing.
     const sharedItems = [
-      { name: 'passport', category: 'must-have' },
-      { name: 'kindle', category: 'nice-to-have' },
+      { name: 'passport', category: 'documents' },
+      { name: 'kindle', category: 'electronics' },
     ];
     const hash = '#share=' + encodeSharePayload(sharedItems);
     await mount(memStorage(), hash);
@@ -312,8 +317,8 @@ describe('app integration', () => {
 
   it('import dialog adds selected items to the list', async () => {
     const sharedItems = [
-      { name: 'kindle', category: 'nice-to-have' },
-      { name: 'travel pillow', category: 'must-have' },
+      { name: 'kindle', category: 'electronics' },
+      { name: 'travel pillow', category: 'clothing' },
     ];
     const hash = '#share=' + encodeSharePayload(sharedItems);
     const { root } = await mount(memStorage(), hash);
@@ -321,25 +326,25 @@ describe('app integration', () => {
     // Both items should be pre-checked; click Import selected.
     overlay.querySelector('.modal-import-btn').click();
     expect(document.body.querySelector('.modal-overlay')).toBeNull();
-    expect(root.querySelector('.list-nice-to-have').textContent).toContain('kindle');
-    expect(root.querySelector('.list-must-have').textContent).toContain('travel pillow');
+    expect(root.querySelector('.list-electronics').textContent).toContain('kindle');
+    expect(root.querySelector('.list-clothing').textContent).toContain('travel pillow');
   });
 
   it('import dialog Cancel button dismisses without importing', async () => {
-    const sharedItems = [{ name: 'kindle', category: 'nice-to-have' }];
+    const sharedItems = [{ name: 'kindle', category: 'electronics' }];
     const hash = '#share=' + encodeSharePayload(sharedItems);
     const { root } = await mount(memStorage(), hash);
     const overlay = document.body.querySelector('.modal-overlay');
     overlay.querySelector('.modal-cancel-btn').click();
     expect(document.body.querySelector('.modal-overlay')).toBeNull();
-    expect(root.querySelector('.list-nice-to-have').textContent).not.toContain('kindle');
+    expect(root.querySelector('.list-electronics').textContent).not.toContain('kindle');
   });
 
   it('import dialog shows "already in list" message when all items exist', async () => {
     // passport and umbrella are both in the defaults
     const sharedItems = [
-      { name: 'passport', category: 'must-have' },
-      { name: 'umbrella', category: 'nice-to-have' },
+      { name: 'passport', category: 'documents' },
+      { name: 'umbrella', category: 'toiletries' },
     ];
     const hash = '#share=' + encodeSharePayload(sharedItems);
     await mount(memStorage(), hash);
