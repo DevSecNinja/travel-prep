@@ -13,6 +13,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axe from 'axe-core';
 import { initApp } from '../src/app.js';
 import { STORAGE_KEY } from '../src/storage.js';
+import { encodeSharePayload } from '../src/share.js';
 
 const YAML = `must-have:
   - passport
@@ -33,7 +34,7 @@ function memStorage() {
   };
 }
 
-async function mount(storage = memStorage()) {
+async function mount(storage = memStorage(), locationHash = '') {
   // Mirror the document-level attributes from index.html so accessibility
   // checks see the same surface as production.
   document.documentElement.lang = 'en';
@@ -47,6 +48,7 @@ async function mount(storage = memStorage()) {
   await initApp(root, {
     storage,
     fetchYaml: async () => YAML,
+    locationHash,
   });
   return { root, storage };
 }
@@ -238,5 +240,113 @@ describe('app integration', () => {
       console.error(JSON.stringify(serious, null, 2));
     }
     expect(serious).toEqual([]);
+  });
+
+  // ----- Share / Import -------------------------------------------------------
+
+  it('renders a "Share list" button in the controls', async () => {
+    const { root } = await mount();
+    const btn = root.querySelector('.share-btn');
+    expect(btn).toBeTruthy();
+    expect(btn.textContent).toContain('Share list');
+  });
+
+  it('clicking the share button opens a share dialog', async () => {
+    const { root } = await mount();
+    root.querySelector('.share-btn').click();
+    const overlay = document.body.querySelector('.modal-overlay');
+    expect(overlay).toBeTruthy();
+    expect(overlay.querySelector('.modal-title').textContent).toContain('Share');
+    expect(overlay.querySelector('.share-url-input')).toBeTruthy();
+    expect(overlay.querySelector('.share-copy-btn')).toBeTruthy();
+    // Clean up
+    overlay.remove();
+  });
+
+  it('share dialog URL contains all current items encoded in the hash', async () => {
+    const { root } = await mount();
+    root.querySelector('.share-btn').click();
+    const urlInput = document.body.querySelector('.share-url-input');
+    expect(urlInput.value).toContain('#share=');
+    const hash = urlInput.value.split('#')[1];
+    const { readShareFromHash } = await import('../src/share.js');
+    const decoded = readShareFromHash('#' + hash);
+    expect(decoded).toBeTruthy();
+    expect(decoded.map((i) => i.name)).toContain('passport');
+    // Clean up
+    document.body.querySelector('.modal-overlay').remove();
+  });
+
+  it('opening with a #share= hash shows an import dialog', async () => {
+    const sharedItems = [
+      { name: 'kindle', category: 'nice-to-have' },
+      { name: 'travel pillow', category: 'must-have' },
+    ];
+    const hash = '#share=' + encodeSharePayload(sharedItems);
+    await mount(memStorage(), hash);
+    const overlay = document.body.querySelector('.modal-overlay');
+    expect(overlay).toBeTruthy();
+    expect(overlay.querySelector('#import-dialog-title').textContent).toContain('Import');
+    expect(overlay.textContent).toContain('kindle');
+    expect(overlay.textContent).toContain('travel pillow');
+    // Clean up
+    overlay.remove();
+  });
+
+  it('import dialog marks items already in the list as existing', async () => {
+    // 'passport' is in the default YAML, so it should be marked as existing.
+    const sharedItems = [
+      { name: 'passport', category: 'must-have' },
+      { name: 'kindle', category: 'nice-to-have' },
+    ];
+    const hash = '#share=' + encodeSharePayload(sharedItems);
+    await mount(memStorage(), hash);
+    const overlay = document.body.querySelector('.modal-overlay');
+    expect(overlay.textContent).toContain('passport (already in your list)');
+    // kindle is new, so it should appear as a selectable checkbox
+    const newCbs = Array.from(overlay.querySelectorAll('.import-item input[type="checkbox"]:not(:disabled)'));
+    expect(newCbs.map((cb) => cb.dataset.name)).toContain('kindle');
+    // Clean up
+    overlay.remove();
+  });
+
+  it('import dialog adds selected items to the list', async () => {
+    const sharedItems = [
+      { name: 'kindle', category: 'nice-to-have' },
+      { name: 'travel pillow', category: 'must-have' },
+    ];
+    const hash = '#share=' + encodeSharePayload(sharedItems);
+    const { root } = await mount(memStorage(), hash);
+    const overlay = document.body.querySelector('.modal-overlay');
+    // Both items should be pre-checked; click Import selected.
+    overlay.querySelector('.modal-import-btn').click();
+    expect(document.body.querySelector('.modal-overlay')).toBeNull();
+    expect(root.querySelector('.list-nice-to-have').textContent).toContain('kindle');
+    expect(root.querySelector('.list-must-have').textContent).toContain('travel pillow');
+  });
+
+  it('import dialog Cancel button dismisses without importing', async () => {
+    const sharedItems = [{ name: 'kindle', category: 'nice-to-have' }];
+    const hash = '#share=' + encodeSharePayload(sharedItems);
+    const { root } = await mount(memStorage(), hash);
+    const overlay = document.body.querySelector('.modal-overlay');
+    overlay.querySelector('.modal-cancel-btn').click();
+    expect(document.body.querySelector('.modal-overlay')).toBeNull();
+    expect(root.querySelector('.list-nice-to-have').textContent).not.toContain('kindle');
+  });
+
+  it('import dialog shows "already in list" message when all items exist', async () => {
+    // passport and umbrella are both in the defaults
+    const sharedItems = [
+      { name: 'passport', category: 'must-have' },
+      { name: 'umbrella', category: 'nice-to-have' },
+    ];
+    const hash = '#share=' + encodeSharePayload(sharedItems);
+    await mount(memStorage(), hash);
+    const overlay = document.body.querySelector('.modal-overlay');
+    expect(overlay.textContent).toContain('already in your list');
+    expect(overlay.querySelector('.modal-import-btn')).toBeNull();
+    // Clean up
+    overlay.remove();
   });
 });

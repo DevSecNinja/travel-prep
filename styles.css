@@ -171,6 +171,7 @@ button {
 .theme-select select,
 .reset-btn,
 .check-all-btn,
+.share-btn,
 .add-form input,
 .add-form select,
 .add-form button {
@@ -201,6 +202,17 @@ button {
 }
 
 .check-all-btn:hover {
+  filter: brightness(1.05);
+}
+
+.share-btn {
+  background: linear-gradient(120deg, var(--accent), var(--primary));
+  color: #2a2350;
+  font-weight: 600;
+  border: none;
+}
+
+.share-btn:hover {
   filter: brightness(1.05);
 }
 
@@ -499,4 +511,159 @@ button {
   font-size: 0.75rem;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 480px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.modal-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.modal-desc {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Share dialog */
+.share-url-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.share-url-input {
+  flex: 1;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.8rem;
+  min-width: 0;
+}
+
+.share-copy-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  white-space: nowrap;
+}
+
+.share-copy-btn:hover {
+  background: var(--primary-strong);
+}
+
+/* Import dialog */
+.import-category {
+  margin-bottom: 0.75rem;
+}
+
+.import-category-heading {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.import-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.import-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius);
+}
+
+.import-item input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+
+.import-item-existing {
+  opacity: 0.5;
+}
+
+/* Modal action buttons */
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.modal-cancel-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.modal-cancel-btn:hover {
+  background: var(--surface-strong);
+}
+
+.modal-close-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.modal-close-btn:hover {
+  background: var(--surface-strong);
+}
+
+.modal-import-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: var(--success);
+  color: #2a2350;
+  font-weight: 600;
+  border: none;
+}
+
+.modal-import-btn:hover {
+  filter: brightness(1.05);
 }
