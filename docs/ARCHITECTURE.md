@@ -51,14 +51,14 @@ data model grows, swap in [`js-yaml`](https://github.com/nodeca/js-yaml).
 
 ## State model
 
-A single key, `travel-prep:state:v1`, holds:
+A single key, `travel-prep:state:v2`, holds:
 
 ```jsonc
 {
   "version": 1,
   "theme": "auto" | "light" | "dark",
   "items": [
-    { "id": "uuid", "name": "passport", "category": "must-have",
+    { "id": "uuid", "name": "passport", "category": "documents",
       "custom": false, "checked": false }
   ]
 }

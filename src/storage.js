@@ -4,15 +4,15 @@
  * Shape:
  * {
  *   version: 1,
- *   items: [{ id, name, category: 'must-have'|'nice-to-have', custom: boolean, checked: boolean }],
+ *   items: [{ id, name, category: 'documents'|'clothing'|'toiletries'|'electronics'|'pre-departure', custom: boolean, checked: boolean }],
  *   theme: 'auto' | 'light' | 'dark'
  * }
  */
 
-export const STORAGE_KEY = 'travel-prep:state:v1';
+export const STORAGE_KEY = 'travel-prep:state:v2';
 
 /**
- * @typedef {{ id: string, name: string, category: 'must-have' | 'nice-to-have', custom: boolean, checked: boolean }} Item
+ * @typedef {{ id: string, name: string, category: 'documents' | 'clothing' | 'toiletries' | 'electronics' | 'pre-departure', custom: boolean, checked: boolean }} Item
  * @typedef {{ version: 1, items: Item[], theme: 'auto'|'light'|'dark' }} State
  */
 
@@ -61,8 +61,8 @@ export function mergeDefaults(defaults, existing) {
     }
   }
 
-  /** @type {Array<'must-have'|'nice-to-have'>} */
-  const cats = ['must-have', 'nice-to-have'];
+  /** @type {Array<'documents'|'clothing'|'toiletries'|'electronics'|'pre-departure'>} */
+  const cats = ['documents', 'clothing', 'toiletries', 'electronics', 'pre-departure'];
   for (const cat of cats) {
     for (const name of defaults[cat] ?? []) {
       const key = `${cat}::${name.toLowerCase()}`;

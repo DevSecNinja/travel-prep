@@ -40,13 +40,16 @@ describe('storage', () => {
 
 describe('mergeDefaults', () => {
   const defaults = {
-    'must-have': ['passport', 'socks'],
-    'nice-to-have': ['umbrella'],
+    'documents': ['passport'],
+    'clothing': ['socks'],
+    'toiletries': ['sunscreen'],
+    'electronics': ['laptop'],
+    'pre-departure': ['water plants'],
   };
 
   it('creates fresh state from defaults', () => {
     const merged = mergeDefaults(defaults, null);
-    expect(merged.items).toHaveLength(3);
+    expect(merged.items).toHaveLength(5);
     expect(merged.items.every((i) => i.checked === false)).toBe(true);
     expect(merged.items.every((i) => i.custom === false)).toBe(true);
     expect(merged.theme).toBe('auto');
@@ -57,7 +60,7 @@ describe('mergeDefaults', () => {
       version: 1,
       theme: 'dark',
       items: [
-        { id: 'p', name: 'Passport', category: 'must-have', custom: false, checked: true },
+        { id: 'p', name: 'Passport', category: 'documents', custom: false, checked: true },
       ],
     };
     const merged = mergeDefaults(defaults, existing);
@@ -71,13 +74,13 @@ describe('mergeDefaults', () => {
       version: 1,
       theme: 'auto',
       items: [
-        { id: 'x', name: 'kindle', category: 'nice-to-have', custom: true, checked: false },
+        { id: 'x', name: 'kindle', category: 'electronics', custom: true, checked: false },
       ],
     };
     const merged = mergeDefaults(defaults, existing);
     expect(merged.items.find((i) => i.name === 'kindle')).toMatchObject({
       custom: true,
-      category: 'nice-to-have',
+      category: 'electronics',
     });
   });
 });

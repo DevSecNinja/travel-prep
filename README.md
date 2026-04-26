@@ -8,8 +8,8 @@ train or road trip.
 
 ## Features
 
-- Two categories — **Must-have** and **Nice-to-have** — seeded from
-  [`data/items.yaml`](./data/items.yaml).
+- Five categories — **Documents**, **Clothing**, **Toiletries**, **Electronics**,
+  and **Pre-departure** — seeded from [`data/items.yaml`](./data/items.yaml).
 - Add your own items, check / uncheck them, or **uncheck all** with a single
   click after your trip.
 - A 🧳 suitcase animation flies each item into the case as you pack it

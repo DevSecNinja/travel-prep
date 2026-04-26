@@ -1,12 +1,81 @@
 # Default packing list seed data.
-# Two categories: must-have and nice-to-have.
+# Five categories: documents, clothing, toiletries, electronics, pre-departure.
 # Users can add their own items in-app; those are stored in the browser only.
-must-have:
+documents:
   - passport
-  - toothbrush
-  - tooth paste
+  - visa / esta
+  - arrival card
+  - wallet
+  - pen
+  - ns business card
+  - microsoft badge
+clothing:
   - socks
   - underwear
-nice-to-have:
-  - sunscreen
+  - cap
+  - slippers
+  - bath slippers
+  - beanie
+  - belt
+  - scarf
+  - vest
+  - swim shorts
   - umbrella
+  - travel pillow
+  - sleep mask
+  - ear protection
+  - lightweight bag
+  - watch for swimming pool
+toiletries:
+  - toothbrush
+  - tooth paste
+  - toothbrush head
+  - beard trimmer
+  - nose trimmer
+  - hand sanitizer
+  - tissues
+  - sunscreen
+  - chewing gum
+  - nasal spray
+  - wet wipes
+  - nail clippers
+  - lip balm
+  - hand cream
+  - mosquito spray
+  - hay fever pills
+  - face masks
+  - toiletry bag
+electronics:
+  - ipad
+  - laptop
+  - airpods
+  - airtag
+  - usb cable
+  - lightning to usb cable
+  - battery pack
+  - airfly infotainment adapter
+  - portable keyboard
+  - dongle
+  - large charger
+  - apple watch charger
+  - oral-b charger
+  - us/uk power adapter
+  - surface power adapter
+  - large lens cloth
+  - nanopresso espresso maker
+pre-departure:
+  - home assistant in vacation mode
+  - empty trash
+  - unplug everything
+  - water plants
+  - clean coffee machine
+  - turn down thermostat
+  - shut down pc
+  - empty or run dishwasher
+  - charge devices to full
+  - register for airport security
+  - books and movies downloaded
+  - expenses filed
+  - open ventilation grilles
+  - empty laptop bag
+  - refill water bottle at lounge
