@@ -38,7 +38,7 @@ if ('serviceWorker' in navigator) {
     });
 
     navigator.serviceWorker
-      .register('./service-worker.js?v=__BUILD_ID__')
+      .register('./service-worker.js?v=__BUILD_ID__', { updateViaCache: 'none' })
       .then((reg) => {
         // Belt-and-suspenders: also listen on the installing worker's state
         // transitions for browsers that surface updatefound reliably.
