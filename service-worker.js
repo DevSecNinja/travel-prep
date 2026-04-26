@@ -20,6 +20,7 @@ const APP_SHELL = [
   './manifest.webmanifest',
   './src/main.js',
   './src/app.js',
+  './src/share.js',
   './src/yaml.js',
   './src/storage.js',
   './data/items.yaml',
@@ -32,7 +33,17 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      await cache.addAll(APP_SHELL);
+      // Use cache:'reload' so each file is always fetched from the network,
+      // bypassing the browser's HTTP cache.  Without this, iOS (and other
+      // clients) can serve a stale HTTP-cached copy of app.js / styles.css
+      // into the new SW cache, making the precached shell look identical to
+      // the previous version even though a new build was deployed.
+      await Promise.all(
+        APP_SHELL.map(async (url) => {
+          const res = await fetch(new Request(url, { cache: 'reload' }));
+          if (res.ok) await cache.put(url, res);
+        }),
+      );
       await self.skipWaiting();
     })(),
   );
@@ -76,7 +87,11 @@ self.addEventListener('fetch', (event) => {
 async function networkFirst(req) {
   const cache = await caches.open(CACHE_NAME);
   try {
-    const fresh = await fetch(req);
+    // Use cache:'no-cache' to revalidate with the server on every request,
+    // bypassing the browser's HTTP cache.  This prevents a stale HTTP-cached
+    // copy of main.js (or any other network-first resource) from being served
+    // even when the device is online.
+    const fresh = await fetch(new Request(req, { cache: 'no-cache' }));
     if (fresh.ok) cache.put(req, fresh.clone());
     return fresh;
   } catch {
@@ -98,7 +113,7 @@ async function cacheFirst(req) {
   const cached = await cache.match(req);
   if (cached) return cached;
   try {
-    const fresh = await fetch(req);
+    const fresh = await fetch(new Request(req, { cache: 'no-cache' }));
     if (fresh.ok) cache.put(req, fresh.clone());
     return fresh;
   } catch {

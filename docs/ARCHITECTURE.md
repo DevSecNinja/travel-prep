@@ -89,6 +89,15 @@ the user's `checked` flags and any custom items.
 - A `visibilitychange` listener calls `reg.update()` whenever the PWA window
   is foregrounded, so updates are detected promptly without waiting for the
   hourly polling interval.
+- **HTTP cache bypass**: the `install` handler fetches every app-shell file
+  with `{ cache: 'reload' }` (bypasses HTTP cache entirely) rather than using
+  `cache.addAll()`. Network-first and cache-first fetches use `{ cache:
+  'no-cache' }` to revalidate with the server. Together these prevent the
+  browser's HTTP cache from "poisoning" a freshly deployed SW with stale
+  content.
+- **`updateViaCache: 'none'`** is passed to `navigator.serviceWorker.register`
+  so the browser always fetches the SW script from the network when checking
+  for updates, bypassing the HTTP cache entirely.
 
 ## Deployment
 
