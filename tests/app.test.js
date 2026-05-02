@@ -186,6 +186,15 @@ describe('app integration', () => {
     expect(footer.textContent).toContain('Travel Prep');
   });
 
+  it('renders a footer note about browser storage and mobile PWA install', async () => {
+    const { root } = await mount();
+    const note = root.querySelector('.app-footer .storage-note');
+    expect(note).toBeTruthy();
+    expect(note.textContent).toContain('stored in this browser');
+    expect(note.textContent).toContain('lost if cache storage is cleared');
+    expect(note.textContent).toContain('install Travel Prep as a PWA');
+  });
+
   it('renders a footer with a real commit hash link when buildId is provided', async () => {
     document.body.innerHTML = '<main id="app"></main>';
     const r = document.getElementById('app');
