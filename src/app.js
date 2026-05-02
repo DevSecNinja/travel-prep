@@ -186,6 +186,7 @@ export async function initApp(root, opts = {}) {
       : `<a class="commit-link" href="https://github.com/DevSecNinja/travel-prep/commit/${shortHash}" target="_blank" rel="noopener">${shortHash}</a>`;
     footer.innerHTML = `
       <p>Travel Prep &mdash; Built by <a href="https://github.com/DevSecNinja" target="_blank" rel="noopener">DevSecNinja</a></p>
+      <p class="storage-note">Your list is stored in this browser and will be lost if cache storage is cleared. For mobile, install Travel Prep as a PWA.</p>
       <span class="commit-sha">${commitContent}</span>
       <div class="github-star">
         <a href="https://github.com/DevSecNinja/travel-prep" target="_blank" rel="noopener" class="github-star-button">
