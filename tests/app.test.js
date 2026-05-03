@@ -17,6 +17,7 @@ import { STORAGE_KEY } from '../src/storage.js';
 import { encodeSharePayload } from '../src/share.js';
 
 const STYLES = readFileSync('styles.css', 'utf8');
+const ANIMATION_FALLBACK_MS = 1200;
 
 const YAML = `documents:
   - passport
@@ -126,7 +127,7 @@ describe('app integration', () => {
 
     // animation falls back to immediate render under jsdom (no rAF transitions)
     // but we trigger setTimeout fallback in code; flush timers:
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     const count = root.querySelector('.suitcase-count strong');
     expect(Number(count.textContent)).toBe(1);
   });
@@ -138,7 +139,7 @@ describe('app integration', () => {
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     root.querySelector('.reset-btn').click();
     const checkedAfter = root.querySelectorAll('.item input[type="checkbox"]:checked');
     expect(checkedAfter).toHaveLength(0);
@@ -161,7 +162,7 @@ describe('app integration', () => {
         .previousElementSibling;
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
-      await new Promise((r) => setTimeout(r, 1200));
+      await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     }
     // remount
     const { root } = await mount(storage);
@@ -188,7 +189,7 @@ describe('app integration', () => {
     const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
     cb.checked = true;
     cb.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
 
     const unchecked = root.querySelector('.list-unchecked');
     expect(unchecked).toBeTruthy();
@@ -225,7 +226,7 @@ describe('app integration', () => {
     const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
     cb.checked = true;
     cb.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
 
     const unchecked = root.querySelector('.list-unchecked');
     const toggle = unchecked.querySelector('.unchecked-toggle');
