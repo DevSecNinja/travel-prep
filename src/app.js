@@ -657,8 +657,15 @@ export async function initApp(root, opts = {}) {
     if (checked) {
       animateIntoSuitcase(li);
     } else {
-      // Just re-render to update strikethrough / counts.
+      const itemTop = li.getBoundingClientRect().top;
       render();
+      const categorySection = root.querySelector(`.list-${item.category}`);
+      const renderedItem = Array.from(categorySection?.querySelectorAll('.item') ?? [])
+        .find((el) => /** @type {HTMLElement} */ (el).dataset.id === id);
+      if (renderedItem && typeof globalThis.scrollBy === 'function') {
+        const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
+        if (topDelta !== 0) globalThis.scrollBy(0, topDelta);
+      }
     }
   }
 

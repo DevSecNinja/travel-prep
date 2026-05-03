@@ -198,6 +198,47 @@ describe('app integration', () => {
     expect(unchecked.textContent).toContain('socks');
   });
 
+  it('keeps the current item anchored when unchecking adds it above', async () => {
+    const { root } = await mount();
+    root.querySelector('.check-all-btn').click();
+
+    const item = root.querySelector('.list-documents .item');
+    const itemId = item.dataset.id;
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+    const scrollBy = vi.fn();
+    vi.stubGlobal('scrollBy', scrollBy);
+    let anchorReads = 0;
+    HTMLElement.prototype.getBoundingClientRect = function getBoundingClientRect() {
+      if (this.dataset?.id === itemId && this.closest('.list-documents')) {
+        anchorReads += 1;
+        const top = anchorReads === 1 ? 200 : 236;
+        return {
+          x: 0,
+          y: top,
+          top,
+          left: 0,
+          right: 100,
+          bottom: top + 20,
+          width: 100,
+          height: 20,
+          toJSON: () => ({}),
+        };
+      }
+      return originalGetBoundingClientRect.call(this);
+    };
+
+    try {
+      const cb = item.querySelector('input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new Event('change', { bubbles: true }));
+
+      expect(scrollBy).toHaveBeenCalledWith(0, 36);
+    } finally {
+      HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('lets the unchecked items section be collapsed and expanded', async () => {
     const { root } = await mount();
     const unchecked = root.querySelector('.list-unchecked');
