@@ -48,6 +48,9 @@ export async function initApp(root, opts = {}) {
   let state = mergeDefaults(defaults, loadState(storage));
   saveState(state, storage);
 
+  let uncheckedCollapsed = state.items.filter((i) => !i.checked).length > UNCHECKED_AUTO_COLLAPSE_THRESHOLD;
+  let uncheckedCollapseUserSet = false;
+
   applyTheme(state.theme);
   // ----- GitHub Stars --------------------------------------------------------
 
@@ -157,10 +160,15 @@ export async function initApp(root, opts = {}) {
     uncheckedSection.appendChild(uncheckedHeading);
 
     const uncheckedItems = state.items.filter((i) => !i.checked);
+    if (uncheckedItems.length === 0) {
+      uncheckedCollapsed = false;
+      uncheckedCollapseUserSet = false;
+    } else if (!uncheckedCollapseUserSet) {
+      uncheckedCollapsed = uncheckedItems.length > UNCHECKED_AUTO_COLLAPSE_THRESHOLD;
+    }
     const uncheckedList = document.createElement('ul');
     uncheckedList.id = 'unchecked-items-list';
     uncheckedList.className = 'item-list';
-    let uncheckedCollapsed = uncheckedItems.length > UNCHECKED_AUTO_COLLAPSE_THRESHOLD;
     if (uncheckedItems.length > 0) {
       const uncheckedToggle = document.createElement('button');
       uncheckedToggle.type = 'button';
@@ -174,6 +182,7 @@ export async function initApp(root, opts = {}) {
       };
       uncheckedToggle.addEventListener('click', () => {
         uncheckedCollapsed = !uncheckedCollapsed;
+        uncheckedCollapseUserSet = true;
         uncheckedList.hidden = uncheckedCollapsed;
         updateUncheckedToggle();
       });

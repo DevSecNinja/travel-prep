@@ -9,11 +9,15 @@
  *   - persistence across a "page reload"
  *   - axe accessibility scan
  */
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axe from 'axe-core';
 import { initApp } from '../src/app.js';
 import { STORAGE_KEY } from '../src/storage.js';
 import { encodeSharePayload } from '../src/share.js';
+
+const STYLES = readFileSync('styles.css', 'utf8');
+const ANIMATION_FALLBACK_MS = 1200;
 
 const YAML = `documents:
   - passport
@@ -123,7 +127,7 @@ describe('app integration', () => {
 
     // animation falls back to immediate render under jsdom (no rAF transitions)
     // but we trigger setTimeout fallback in code; flush timers:
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     const count = root.querySelector('.suitcase-count strong');
     expect(Number(count.textContent)).toBe(1);
   });
@@ -135,7 +139,7 @@ describe('app integration', () => {
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     root.querySelector('.reset-btn').click();
     const checkedAfter = root.querySelectorAll('.item input[type="checkbox"]:checked');
     expect(checkedAfter).toHaveLength(0);
@@ -158,7 +162,7 @@ describe('app integration', () => {
         .previousElementSibling;
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
-      await new Promise((r) => setTimeout(r, 1200));
+      await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
     }
     // remount
     const { root } = await mount(storage);
@@ -185,7 +189,7 @@ describe('app integration', () => {
     const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
     cb.checked = true;
     cb.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
 
     const unchecked = root.querySelector('.list-unchecked');
     expect(unchecked).toBeTruthy();
@@ -207,10 +211,46 @@ describe('app integration', () => {
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
 
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(list.hidden).toBe(false);
+    expect(getComputedStyle(list).display).not.toBe('none');
+  });
+
+  it('keeps unchecked items collapsed after packing an item', async () => {
+    const { root } = await mount();
+    root.querySelector('.list-unchecked .unchecked-toggle').click();
+
+    const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, ANIMATION_FALLBACK_MS));
+
+    const unchecked = root.querySelector('.list-unchecked');
+    const toggle = unchecked.querySelector('.unchecked-toggle');
+    const list = unchecked.querySelector('.item-list');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
+  });
+
+  it('keeps the rendered unchecked item list visually hidden when styles are loaded', async () => {
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    document.head.appendChild(style);
+
+    try {
+      const { root } = await mount();
+      root.querySelector('.list-unchecked .unchecked-toggle').click();
+      const list = root.querySelector('.list-unchecked .item-list');
+
+      expect(list.hidden).toBe(true);
+      expect(getComputedStyle(list).display).toBe('none');
+    } finally {
+      style.remove();
+    }
   });
 
   it('auto-collapses unchecked items when more than five are unpacked', async () => {
@@ -222,10 +262,12 @@ describe('app integration', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(toggle.textContent).toContain('Show 7 items');
     expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
 
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(list.hidden).toBe(false);
+    expect(getComputedStyle(list).display).not.toBe('none');
   });
 
   it('marks unchecked items and shows an empty unchecked section once everything is packed', async () => {
