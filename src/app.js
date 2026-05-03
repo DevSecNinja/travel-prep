@@ -18,6 +18,7 @@ const CATEGORY_LABELS = {
   'electronics': 'Electronics',
   'pre-departure': 'Pre-departure',
 };
+const UNCHECKED_AUTO_COLLAPSE_THRESHOLD = 5;
 
 /**
  * Initialise the app inside the given root element.
@@ -159,7 +160,7 @@ export async function initApp(root, opts = {}) {
     const uncheckedList = document.createElement('ul');
     uncheckedList.id = 'unchecked-items-list';
     uncheckedList.className = 'item-list';
-    let uncheckedCollapsed = uncheckedItems.length > 5;
+    let uncheckedCollapsed = uncheckedItems.length > UNCHECKED_AUTO_COLLAPSE_THRESHOLD;
     if (uncheckedItems.length > 0) {
       const uncheckedToggle = document.createElement('button');
       uncheckedToggle.type = 'button';
@@ -189,7 +190,9 @@ export async function initApp(root, opts = {}) {
         uncheckedList.appendChild(buildItem(item, 'unchecked-cb'));
       }
     }
-    uncheckedList.hidden = uncheckedCollapsed;
+    if (uncheckedItems.length > 0) {
+      uncheckedList.hidden = uncheckedCollapsed;
+    }
     uncheckedSection.appendChild(uncheckedList);
     root.appendChild(uncheckedSection);
 
