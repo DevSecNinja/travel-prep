@@ -161,7 +161,7 @@ export async function initApp(root, opts = {}) {
     if (uncheckedItems.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'empty';
-      empty.textContent = 'Everything is packed.';
+      empty.textContent = 'Everything is packed';
       uncheckedList.appendChild(empty);
     } else {
       for (const item of uncheckedItems) {
@@ -547,7 +547,7 @@ export async function initApp(root, opts = {}) {
    */
   function buildItem(item, idPrefix = 'cb') {
     const li = document.createElement('li');
-    li.className = 'item ' + (item.checked ? 'checked' : 'unchecked');
+    li.className = `item ${item.checked ? 'checked' : 'unchecked'}`;
     li.dataset.id = item.id;
 
     const cb = document.createElement('input');
