@@ -155,9 +155,30 @@ export async function initApp(root, opts = {}) {
     uncheckedHeading.textContent = 'Unchecked items';
     uncheckedSection.appendChild(uncheckedHeading);
 
-    const uncheckedList = document.createElement('ul');
-    uncheckedList.className = 'item-list';
     const uncheckedItems = state.items.filter((i) => !i.checked);
+    const uncheckedList = document.createElement('ul');
+    uncheckedList.id = 'unchecked-items-list';
+    uncheckedList.className = 'item-list';
+    let uncheckedCollapsed = uncheckedItems.length > 5;
+    if (uncheckedItems.length > 0) {
+      const uncheckedToggle = document.createElement('button');
+      uncheckedToggle.type = 'button';
+      uncheckedToggle.className = 'unchecked-toggle';
+      uncheckedToggle.setAttribute('aria-controls', uncheckedList.id);
+      const updateUncheckedToggle = () => {
+        uncheckedToggle.setAttribute('aria-expanded', String(!uncheckedCollapsed));
+        uncheckedToggle.textContent = uncheckedCollapsed
+          ? `Show ${uncheckedItems.length} items`
+          : 'Hide items';
+      };
+      uncheckedToggle.addEventListener('click', () => {
+        uncheckedCollapsed = !uncheckedCollapsed;
+        uncheckedList.hidden = uncheckedCollapsed;
+        updateUncheckedToggle();
+      });
+      updateUncheckedToggle();
+      uncheckedSection.appendChild(uncheckedToggle);
+    }
     if (uncheckedItems.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'empty';
@@ -168,6 +189,7 @@ export async function initApp(root, opts = {}) {
         uncheckedList.appendChild(buildItem(item, 'unchecked-cb'));
       }
     }
+    uncheckedList.hidden = uncheckedCollapsed;
     uncheckedSection.appendChild(uncheckedList);
     root.appendChild(uncheckedSection);
 

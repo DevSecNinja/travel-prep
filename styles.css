@@ -330,6 +330,19 @@ button {
 .list-nice-to-have h2::before { content: '✨'; }
 .list-unchecked h2::before { content: '☝️'; }
 
+.unchecked-toggle {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.unchecked-toggle:hover {
+  color: var(--text);
+}
+
 .item-list {
   list-style: none;
   margin: 0;

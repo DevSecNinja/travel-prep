@@ -27,6 +27,20 @@ pre-departure:
   - water plants
 `;
 
+const MANY_UNCHECKED_YAML = `documents:
+  - passport
+  - boarding pass
+clothing:
+  - socks
+  - jacket
+toiletries:
+  - umbrella
+electronics:
+  - laptop
+pre-departure:
+  - water plants
+`;
+
 function memStorage() {
   const map = new Map();
   return {
@@ -39,7 +53,7 @@ function memStorage() {
   };
 }
 
-async function mount(storage = memStorage(), locationHash = '') {
+async function mount(storage = memStorage(), locationHash = '', yaml = YAML) {
   // Mirror the document-level attributes from index.html so accessibility
   // checks see the same surface as production.
   document.documentElement.lang = 'en';
@@ -52,7 +66,7 @@ async function mount(storage = memStorage(), locationHash = '') {
   const root = document.getElementById('app');
   await initApp(root, {
     storage,
-    fetchYaml: async () => YAML,
+    fetchYaml: async () => yaml,
     locationHash,
   });
   return { root, storage };
@@ -178,6 +192,40 @@ describe('app integration', () => {
     expect(unchecked.querySelector('h2').textContent).toContain('Unchecked items');
     expect(unchecked.textContent).not.toContain('passport');
     expect(unchecked.textContent).toContain('socks');
+  });
+
+  it('lets the unchecked items section be collapsed and expanded', async () => {
+    const { root } = await mount();
+    const unchecked = root.querySelector('.list-unchecked');
+    const toggle = unchecked.querySelector('.unchecked-toggle');
+    const list = unchecked.querySelector('.item-list');
+
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(list.hidden).toBe(false);
+
+    toggle.click();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(list.hidden).toBe(true);
+
+    toggle.click();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(list.hidden).toBe(false);
+  });
+
+  it('auto-collapses unchecked items when more than five are unpacked', async () => {
+    const { root } = await mount(memStorage(), '', MANY_UNCHECKED_YAML);
+    const unchecked = root.querySelector('.list-unchecked');
+    const toggle = unchecked.querySelector('.unchecked-toggle');
+    const list = unchecked.querySelector('.item-list');
+
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.textContent).toContain('Show 7 items');
+    expect(list.hidden).toBe(true);
+
+    toggle.click();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(list.hidden).toBe(false);
   });
 
   it('marks unchecked items and shows an empty unchecked section once everything is packed', async () => {
