@@ -236,20 +236,19 @@ describe('app integration', () => {
     expect(getComputedStyle(list).display).toBe('none');
   });
 
-  it('keeps hidden item lists visually hidden when styles are loaded', () => {
+  it('keeps the rendered unchecked item list visually hidden when styles are loaded', async () => {
     const style = document.createElement('style');
     style.textContent = STYLES;
     document.head.appendChild(style);
 
-    const list = document.createElement('ul');
-    list.className = 'item-list';
-    list.hidden = true;
-    document.body.appendChild(list);
-
     try {
+      const { root } = await mount();
+      root.querySelector('.list-unchecked .unchecked-toggle').click();
+      const list = root.querySelector('.list-unchecked .item-list');
+
+      expect(list.hidden).toBe(true);
       expect(getComputedStyle(list).display).toBe('none');
     } finally {
-      list.remove();
       style.remove();
     }
   });
