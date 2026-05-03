@@ -236,7 +236,7 @@ describe('app integration', () => {
     expect(getComputedStyle(list).display).toBe('none');
   });
 
-  it('keeps hidden item lists visually collapsed when styles are loaded', () => {
+  it('keeps hidden item lists visually hidden when styles are loaded', () => {
     const style = document.createElement('style');
     style.textContent = STYLES;
     document.head.appendChild(style);
@@ -249,6 +249,7 @@ describe('app integration', () => {
     try {
       expect(getComputedStyle(list).display).toBe('none');
     } finally {
+      list.remove();
       style.remove();
     }
   });
