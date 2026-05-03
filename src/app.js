@@ -658,11 +658,15 @@ export async function initApp(root, opts = {}) {
       animateIntoSuitcase(li);
     } else {
       const itemTop = li.getBoundingClientRect().top;
+      const listClass = Array.from(li.closest('.list')?.classList ?? [])
+        .find((className) => className.startsWith('list-'));
       render();
-      const renderedItem = Array.from(root.querySelectorAll('.item'))
+      const renderedList = listClass
+        ? root.getElementsByClassName(listClass).item(0)
+        : null;
+      const renderedItem = Array.from(renderedList?.querySelectorAll('.item') ?? [])
         .find((el) =>
-          /** @type {HTMLElement} */ (el).dataset.id === id &&
-          !/** @type {HTMLElement} */ (el).closest('.list-unchecked'));
+          /** @type {HTMLElement} */ (el).dataset.id === id);
       if (renderedItem && typeof globalThis.scrollBy === 'function') {
         const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
         globalThis.scrollBy(0, topDelta);
