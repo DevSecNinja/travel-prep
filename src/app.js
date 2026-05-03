@@ -719,6 +719,10 @@ export async function initApp(root, opts = {}) {
       return;
     }
 
+    // Remove the yellow unchecked background immediately so it doesn't persist
+    // during the ~900 ms fly animation.
+    li.classList.remove('unchecked');
+
     const startRect = li.getBoundingClientRect();
     // Target the suitcase body itself so the item flies into the case, not just
     // the surrounding card.

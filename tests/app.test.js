@@ -132,6 +132,21 @@ describe('app integration', () => {
     expect(Number(count.textContent)).toBe(1);
   });
 
+  it('removes the yellow unchecked class immediately when checking an item', async () => {
+    const { root } = await mount();
+    const li = root.querySelector('.list-documents .item.unchecked');
+    const cb = li.querySelector('input[type="checkbox"]');
+
+    expect(li.classList.contains('unchecked')).toBe(true);
+
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+
+    // The unchecked class (yellow background) must be gone right away,
+    // without waiting for the suitcase animation to finish.
+    expect(li.classList.contains('unchecked')).toBe(false);
+  });
+
   it('"Uncheck all" clears every checked item', async () => {
     const { root, storage } = await mount();
     // Check everything directly via state by toggling each box.
