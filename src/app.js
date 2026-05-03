@@ -659,12 +659,13 @@ export async function initApp(root, opts = {}) {
     } else {
       const itemTop = li.getBoundingClientRect().top;
       render();
-      const categorySection = root.querySelector(`.list-${item.category}`);
-      const renderedItem = Array.from(categorySection?.querySelectorAll('.item') ?? [])
-        .find((el) => /** @type {HTMLElement} */ (el).dataset.id === id);
+      const renderedItem = Array.from(root.querySelectorAll('.item'))
+        .find((el) =>
+          /** @type {HTMLElement} */ (el).dataset.id === id &&
+          !/** @type {HTMLElement} */ (el).closest('.list-unchecked'));
       if (renderedItem && typeof globalThis.scrollBy === 'function') {
         const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
-        if (topDelta !== 0) globalThis.scrollBy(0, topDelta);
+        globalThis.scrollBy(0, topDelta);
       }
     }
   }

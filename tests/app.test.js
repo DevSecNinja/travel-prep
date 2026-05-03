@@ -208,24 +208,25 @@ describe('app integration', () => {
     const scrollBy = vi.fn();
     vi.stubGlobal('scrollBy', scrollBy);
     let anchorReads = 0;
-    HTMLElement.prototype.getBoundingClientRect = function getBoundingClientRect() {
-      if (this.dataset?.id === itemId && this.closest('.list-documents')) {
-        anchorReads += 1;
-        const top = anchorReads === 1 ? 200 : 236;
-        return {
-          x: 0,
-          y: top,
-          top,
-          left: 0,
-          right: 100,
-          bottom: top + 20,
-          width: 100,
-          height: 20,
-          toJSON: () => ({}),
-        };
-      }
-      return originalGetBoundingClientRect.call(this);
-    };
+    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function getBoundingClientRect() {
+        if (this.dataset?.id === itemId && this.closest?.('.list-documents')) {
+          anchorReads += 1;
+          const top = anchorReads === 1 ? 200 : 236;
+          return {
+            x: 0,
+            y: top,
+            top,
+            left: 0,
+            right: 100,
+            bottom: top + 20,
+            width: 100,
+            height: 20,
+            toJSON: () => ({}),
+          };
+        }
+        return originalGetBoundingClientRect.call(this);
+      });
 
     try {
       const cb = item.querySelector('input[type="checkbox"]');
@@ -234,7 +235,7 @@ describe('app integration', () => {
 
       expect(scrollBy).toHaveBeenCalledWith(0, 36);
     } finally {
-      HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+      rectSpy.mockRestore();
       vi.unstubAllGlobals();
     }
   });
