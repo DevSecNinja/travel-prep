@@ -212,6 +212,8 @@ describe('app integration', () => {
       .mockImplementation(function getBoundingClientRect() {
         if (this.dataset?.id === itemId && this.closest?.('.list-documents')) {
           anchorReads += 1;
+          // Simulate the category copy being pushed 36px lower after the
+          // unchecked-items section gains this item.
           const top = anchorReads === 1 ? 200 : 236;
           return {
             x: 0,
@@ -233,6 +235,7 @@ describe('app integration', () => {
       cb.checked = false;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
 
+      // The app compensates by scrolling the same 36px, keeping the item anchored.
       expect(scrollBy).toHaveBeenCalledWith(0, 36);
     } finally {
       rectSpy.mockRestore();

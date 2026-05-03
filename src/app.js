@@ -658,10 +658,10 @@ export async function initApp(root, opts = {}) {
       animateIntoSuitcase(li);
     } else {
       const itemTop = li.getBoundingClientRect().top;
+      const listHeadingId = li.closest('.list')?.getAttribute('aria-labelledby');
       render();
-      const renderedList = CATEGORIES.includes(item.category)
-        ? root.getElementsByClassName(`list-${item.category}`).item(0)
-        : null;
+      const renderedList = Array.from(root.querySelectorAll('.list'))
+        .find((el) => el.getAttribute('aria-labelledby') === listHeadingId);
       const renderedItem = Array.from(renderedList?.querySelectorAll('.item') ?? [])
         .find((el) =>
           /** @type {HTMLElement} */ (el).dataset.id === id);
