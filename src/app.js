@@ -658,16 +658,14 @@ export async function initApp(root, opts = {}) {
       animateIntoSuitcase(li);
     } else {
       const itemTop = li.getBoundingClientRect().top;
-      const listClass = Array.from(li.closest('.list')?.classList ?? [])
-        .find((className) => className.startsWith('list-'));
       render();
-      const renderedList = listClass
-        ? root.getElementsByClassName(listClass).item(0)
+      const renderedList = CATEGORIES.includes(item.category)
+        ? root.getElementsByClassName(`list-${item.category}`).item(0)
         : null;
       const renderedItem = Array.from(renderedList?.querySelectorAll('.item') ?? [])
         .find((el) =>
           /** @type {HTMLElement} */ (el).dataset.id === id);
-      if (renderedItem && typeof globalThis.scrollBy === 'function') {
+      if (renderedItem) {
         const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
         globalThis.scrollBy(0, topDelta);
       }

@@ -204,7 +204,7 @@ describe('app integration', () => {
 
     const item = root.querySelector('.list-documents .item');
     const itemId = item.dataset.id;
-    const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
     const scrollBy = vi.fn();
     vi.stubGlobal('scrollBy', scrollBy);
     let anchorReads = 0;
@@ -225,7 +225,7 @@ describe('app integration', () => {
             toJSON: () => ({}),
           };
         }
-        return originalRect.call(this);
+        return originalGetBoundingClientRect.call(this);
       });
 
     try {
