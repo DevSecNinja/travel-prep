@@ -147,6 +147,30 @@ export async function initApp(root, opts = {}) {
     });
     root.appendChild(form);
 
+    const uncheckedSection = document.createElement('section');
+    uncheckedSection.className = 'list list-unchecked';
+    uncheckedSection.setAttribute('aria-labelledby', 'heading-unchecked');
+    const uncheckedHeading = document.createElement('h2');
+    uncheckedHeading.id = 'heading-unchecked';
+    uncheckedHeading.textContent = 'Unchecked items';
+    uncheckedSection.appendChild(uncheckedHeading);
+
+    const uncheckedList = document.createElement('ul');
+    uncheckedList.className = 'item-list';
+    const uncheckedItems = state.items.filter((i) => !i.checked);
+    if (uncheckedItems.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'empty';
+      empty.textContent = 'Everything is packed';
+      uncheckedList.appendChild(empty);
+    } else {
+      for (const item of uncheckedItems) {
+        uncheckedList.appendChild(buildItem(item, 'unchecked-cb'));
+      }
+    }
+    uncheckedSection.appendChild(uncheckedList);
+    root.appendChild(uncheckedSection);
+
     // Lists, one per category
     for (const cat of CATEGORIES) {
       const section = document.createElement('section');
@@ -517,16 +541,19 @@ export async function initApp(root, opts = {}) {
     if (firstFocusable) firstFocusable.focus();
   }
 
-  /** @param {Item} item */
-  function buildItem(item) {
+  /**
+   * @param {Item} item
+   * @param {string} [idPrefix]
+   */
+  function buildItem(item, idPrefix = 'cb') {
     const li = document.createElement('li');
-    li.className = 'item' + (item.checked ? ' checked' : '');
+    li.className = `item ${item.checked ? 'checked' : 'unchecked'}`;
     li.dataset.id = item.id;
 
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.checked = item.checked;
-    cb.id = `cb-${item.id}`;
+    cb.id = `${idPrefix}-${item.id}`;
     cb.addEventListener('change', () => toggleItem(item.id, cb.checked, li));
 
     const label = document.createElement('label');

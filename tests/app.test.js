@@ -95,7 +95,7 @@ describe('app integration', () => {
     form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 
     const passportMatches = root
-      .querySelectorAll('.item label')
+      .querySelectorAll('.list-documents .item label')
       ;
     const names = Array.from(passportMatches).map((l) => l.textContent.toLowerCase());
     expect(names.filter((n) => n === 'passport')).toHaveLength(1);
@@ -164,6 +164,31 @@ describe('app integration', () => {
     // Persisted to storage too
     const saved = JSON.parse(storage.getItem(STORAGE_KEY));
     expect(saved.items.every((i) => i.checked)).toBe(true);
+  });
+
+  it('shows unchecked items in a dedicated section', async () => {
+    const { root } = await mount();
+    const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const unchecked = root.querySelector('.list-unchecked');
+    expect(unchecked).toBeTruthy();
+    expect(unchecked.querySelector('h2').textContent).toContain('Unchecked items');
+    expect(unchecked.textContent).not.toContain('passport');
+    expect(unchecked.textContent).toContain('socks');
+  });
+
+  it('marks unchecked items and shows an empty unchecked section once everything is packed', async () => {
+    const { root } = await mount();
+    const item = root.querySelector('.list-documents .item');
+    expect(item.classList.contains('unchecked')).toBe(true);
+
+    root.querySelector('.check-all-btn').click();
+    const unchecked = root.querySelector('.list-unchecked');
+    expect(unchecked.textContent).toContain('Everything is packed');
+    expect(unchecked.querySelector('.item')).toBeNull();
   });
 
   it('stores new items in lowercase regardless of input case', async () => {
