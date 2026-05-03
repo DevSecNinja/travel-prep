@@ -328,6 +328,7 @@ button {
 
 .list-must-have h2::before { content: '⭐'; }
 .list-nice-to-have h2::before { content: '✨'; }
+.list-unchecked h2::before { content: '☝️'; }
 
 .item-list {
   list-style: none;
@@ -347,14 +348,26 @@ button {
   transition: background-color 150ms ease;
 }
 
+.item.unchecked {
+  background: rgba(255, 209, 102, 0.28);
+}
+
 .item:hover {
   background: rgba(255, 255, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'] .item.unchecked {
+    background: rgba(255, 209, 102, 0.16);
+  }
+
   :root[data-theme='auto'] .item:hover {
     background: rgba(255, 255, 255, 0.06);
   }
+}
+
+:root[data-theme='dark'] .item.unchecked {
+  background: rgba(255, 209, 102, 0.16);
 }
 
 :root[data-theme='dark'] .item:hover {
