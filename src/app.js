@@ -662,12 +662,13 @@ export async function initApp(root, opts = {}) {
       render();
       const renderedList = Array.from(root.querySelectorAll('.list'))
         .find((el) => el.getAttribute('aria-labelledby') === listHeadingId);
-      const renderedItem = Array.from(renderedList?.querySelectorAll('.item') ?? [])
+      if (!renderedList) return;
+      const renderedItem = Array.from(renderedList.querySelectorAll('.item'))
         .find((el) =>
           /** @type {HTMLElement} */ (el).dataset.id === id);
       if (renderedItem) {
         const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
-        globalThis.scrollBy(0, topDelta);
+        if (topDelta !== 0) globalThis.scrollBy(0, topDelta);
       }
     }
   }
