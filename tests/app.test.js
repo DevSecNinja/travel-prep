@@ -326,6 +326,22 @@ describe('app integration', () => {
     expect(unchecked.querySelector('.item')).toBeNull();
   });
 
+  it('keeps the yellow unchecked background while an unchecked item is hovered', () => {
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    document.head.appendChild(style);
+
+    try {
+      const uncheckedHoverRule = Array.from(style.sheet.cssRules)
+        .find((rule) => rule.selectorText === '.item.unchecked:hover');
+
+      expect(uncheckedHoverRule).toBeTruthy();
+      expect(uncheckedHoverRule.style.background).toBe('rgba(255, 209, 102, 0.28)');
+    } finally {
+      style.remove();
+    }
+  });
+
   it('stores new items in lowercase regardless of input case', async () => {
     const { root, storage } = await mount();
     const input = root.querySelector('#new-item-name');

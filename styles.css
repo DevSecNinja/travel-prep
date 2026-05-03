@@ -369,6 +369,10 @@ button {
   background: rgba(255, 209, 102, 0.28);
 }
 
+.item.unchecked:hover {
+  background: rgba(255, 209, 102, 0.28);
+}
+
 .item:hover {
   background: rgba(255, 255, 255, 0.5);
 }
@@ -378,12 +382,20 @@ button {
     background: rgba(255, 209, 102, 0.16);
   }
 
+  :root[data-theme='auto'] .item.unchecked:hover {
+    background: rgba(255, 209, 102, 0.16);
+  }
+
   :root[data-theme='auto'] .item:hover {
     background: rgba(255, 255, 255, 0.06);
   }
 }
 
 :root[data-theme='dark'] .item.unchecked {
+  background: rgba(255, 209, 102, 0.16);
+}
+
+:root[data-theme='dark'] .item.unchecked:hover {
   background: rgba(255, 209, 102, 0.16);
 }
 
