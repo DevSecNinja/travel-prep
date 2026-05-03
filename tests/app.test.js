@@ -207,10 +207,29 @@ describe('app integration', () => {
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
 
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(list.hidden).toBe(false);
+    expect(getComputedStyle(list).display).not.toBe('none');
+  });
+
+  it('keeps unchecked items collapsed after packing an item', async () => {
+    const { root } = await mount();
+    root.querySelector('.list-unchecked .unchecked-toggle').click();
+
+    const cb = root.querySelector('.list-documents .item input[type="checkbox"]');
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const unchecked = root.querySelector('.list-unchecked');
+    const toggle = unchecked.querySelector('.unchecked-toggle');
+    const list = unchecked.querySelector('.item-list');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
   });
 
   it('auto-collapses unchecked items when more than five are unpacked', async () => {
@@ -222,10 +241,12 @@ describe('app integration', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(toggle.textContent).toContain('Show 7 items');
     expect(list.hidden).toBe(true);
+    expect(getComputedStyle(list).display).toBe('none');
 
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(list.hidden).toBe(false);
+    expect(getComputedStyle(list).display).not.toBe('none');
   });
 
   it('marks unchecked items and shows an empty unchecked section once everything is packed', async () => {
