@@ -352,6 +352,10 @@ button {
   gap: 0.35rem;
 }
 
+.item-list[hidden] {
+  display: none;
+}
+
 .item {
   display: flex;
   align-items: center;

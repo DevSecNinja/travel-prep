@@ -9,11 +9,14 @@
  *   - persistence across a "page reload"
  *   - axe accessibility scan
  */
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axe from 'axe-core';
 import { initApp } from '../src/app.js';
 import { STORAGE_KEY } from '../src/storage.js';
 import { encodeSharePayload } from '../src/share.js';
+
+const STYLES = readFileSync('styles.css', 'utf8');
 
 const YAML = `documents:
   - passport
@@ -230,6 +233,23 @@ describe('app integration', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(list.hidden).toBe(true);
     expect(getComputedStyle(list).display).toBe('none');
+  });
+
+  it('keeps hidden item lists visually collapsed when styles are loaded', () => {
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    document.head.appendChild(style);
+
+    const list = document.createElement('ul');
+    list.className = 'item-list';
+    list.hidden = true;
+    document.body.appendChild(list);
+
+    try {
+      expect(getComputedStyle(list).display).toBe('none');
+    } finally {
+      style.remove();
+    }
   });
 
   it('auto-collapses unchecked items when more than five are unpacked', async () => {
