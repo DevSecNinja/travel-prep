@@ -657,8 +657,19 @@ export async function initApp(root, opts = {}) {
     if (checked) {
       animateIntoSuitcase(li);
     } else {
-      // Just re-render to update strikethrough / counts.
+      const itemTop = li.getBoundingClientRect().top;
+      const listHeadingId = li.closest('.list')?.getAttribute('aria-labelledby');
       render();
+      const renderedList = Array.from(root.querySelectorAll('.list'))
+        .find((el) => el.getAttribute('aria-labelledby') === listHeadingId);
+      if (!renderedList) return;
+      const renderedItem = Array.from(renderedList.querySelectorAll('.item'))
+        .find((el) =>
+          /** @type {HTMLElement} */ (el).dataset.id === id);
+      if (renderedItem) {
+        const topDelta = /** @type {HTMLElement} */ (renderedItem).getBoundingClientRect().top - itemTop;
+        if (topDelta !== 0) globalThis.scrollBy(0, topDelta);
+      }
     }
   }
 
