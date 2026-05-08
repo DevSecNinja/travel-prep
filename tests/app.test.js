@@ -431,6 +431,26 @@ describe('app integration', () => {
     expect(JSON.parse(storage.getItem(STORAGE_KEY)).theme).toBe('dark');
   });
 
+  it('switches the interface to Dutch without a reload and persists the choice', async () => {
+    const storage = memStorage();
+    const { root } = await mount(storage);
+    const select = root.querySelector('.language-select select');
+
+    select.value = 'nl';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+
+    expect(document.documentElement.lang).toBe('nl');
+    expect(root.querySelector('.tagline').textContent).toBe('Je vriendelijke inpakmaatje');
+    expect(root.querySelector('.list-documents h2').textContent).toBe('Documenten');
+    expect(root.querySelector('.list-documents .item label').textContent).toBe('paspoort');
+    expect(root.querySelector('.check-all-btn').textContent).toBe('Alles aanvinken');
+    expect(JSON.parse(storage.getItem(STORAGE_KEY)).language).toBe('nl');
+
+    const { root: remounted } = await mount(storage);
+    expect(remounted.querySelector('.language-select select').value).toBe('nl');
+    expect(remounted.querySelector('.list-clothing .item label').textContent).toBe('sokken');
+  });
+
   it('has no critical accessibility violations (axe)', async () => {
     await mount();
     // Inject the page styles minimally so axe sees a real page.

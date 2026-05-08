@@ -39,6 +39,7 @@ Travel Prep is a deliberately small, framework-free Progressive Web App.
 | ---------------- | --------------------------------------------------------------------------------- |
 | `src/main.js`    | Bootstraps the app on `DOMContentLoaded` and registers the service worker.        |
 | `src/app.js`     | All UI rendering, event handling and the suitcase animation.                      |
+| `src/i18n/`      | Modular language resources for UI strings, category labels and item labels.       |
 | `src/storage.js` | `localStorage` shape, JSON validation, and merging of YAML defaults with state.   |
 | `src/yaml.js`    | Tiny YAML parser limited to the file shape we control.                            |
 | `service-worker.js` | App-shell precache + network-first for HTML / YAML, cache-first for assets.    |
@@ -57,6 +58,7 @@ A single key, `travel-prep:state:v2`, holds:
 {
   "version": 1,
   "theme": "auto" | "light" | "dark",
+  "language": "en" | "nl",
   "items": [
     { "id": "uuid", "name": "passport", "category": "documents",
       "custom": false, "checked": false }
@@ -65,7 +67,29 @@ A single key, `travel-prep:state:v2`, holds:
 ```
 
 `mergeDefaults()` re-seeds defaults from YAML on every load while preserving
-the user's `checked` flags and any custom items.
+the user's `checked` flags, selected theme/language and any custom items.
+
+## Internationalization
+
+Language files live in `src/i18n/` and are plain JavaScript modules. Each module
+exports:
+
+- `ui` strings for controls, empty states, footer copy and dialogs.
+- `categories` labels keyed by the stable category ids from `data/items.yaml`.
+- `items` labels keyed by the stable seed item names from `data/items.yaml`.
+
+The app stores canonical item names and category ids in localStorage and share
+URLs, then translates them at render time with `itemLabel()` and
+`categoryLabel()`. This keeps existing user data and shared links stable while
+allowing the UI to switch languages without reloading.
+
+To add another language:
+
+1. Create `src/i18n/<code>.js` following the shape of `en.js` or `nl.js`.
+2. Add the module to `LANGUAGES` in `src/i18n/index.js`.
+3. Add the new module path to `APP_SHELL` in `service-worker.js` so it is
+   available offline.
+4. Add or update tests that assert representative UI, category and item labels.
 
 ## PWA + auto-update strategy
 

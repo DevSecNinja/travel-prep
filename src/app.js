@@ -6,18 +6,18 @@ import {
   cryptoRandomId,
 } from './storage.js';
 import { buildShareUrl, readShareFromHash } from './share.js';
+import {
+  LANGUAGE_OPTIONS,
+  categoryLabel,
+  itemLabel,
+  resolveLanguage,
+  translate,
+} from './i18n/index.js';
 
 /** @typedef {import('./storage.js').State} State */
 /** @typedef {import('./storage.js').Item} Item */
 
 const CATEGORIES = /** @type {const} */ (['documents', 'clothing', 'toiletries', 'electronics', 'pre-departure']);
-const CATEGORY_LABELS = {
-  'documents': 'Documents',
-  'clothing': 'Clothing',
-  'toiletries': 'Toiletries',
-  'electronics': 'Electronics',
-  'pre-departure': 'Pre-departure',
-};
 const UNCHECKED_AUTO_COLLAPSE_THRESHOLD = 5;
 
 /**
@@ -46,12 +46,14 @@ export async function initApp(root, opts = {}) {
   const defaults = parseYaml(yamlText);
   /** @type {State} */
   let state = mergeDefaults(defaults, loadState(storage));
+  state.language = resolveLanguage(state.language);
   saveState(state, storage);
 
   let uncheckedCollapsed = state.items.filter((i) => !i.checked).length > UNCHECKED_AUTO_COLLAPSE_THRESHOLD;
   let uncheckedCollapseUserSet = false;
 
   applyTheme(state.theme);
+  applyLanguage(state.language);
   // ----- GitHub Stars --------------------------------------------------------
 
   let cachedStarCount = /** @type {number|null} */ (null);
@@ -80,17 +82,19 @@ export async function initApp(root, opts = {}) {
   // ----- Rendering -----------------------------------------------------------
 
   function render() {
+    const t = (key, vars = {}) => translate(state.language, key, vars);
     root.innerHTML = '';
 
     // Header
     const header = document.createElement('header');
     header.className = 'app-header';
     header.innerHTML = `
-      <h1>🧳 Travel Prep</h1>
-      <p class="tagline">Your friendly packing companion</p>
+      <h1>🧳 ${t('appTitle')}</h1>
+      <p class="tagline">${t('tagline')}</p>
     `;
     const controls = document.createElement('div');
     controls.className = 'controls';
+    controls.appendChild(buildLanguageSelect());
     controls.appendChild(buildThemeSelect());
     controls.appendChild(buildCheckAllButton());
     controls.appendChild(buildResetButton());
@@ -103,33 +107,29 @@ export async function initApp(root, opts = {}) {
     suitcase.className = 'suitcase';
     suitcase.id = 'suitcase';
     suitcase.setAttribute('aria-live', 'polite');
-    suitcase.setAttribute('aria-label', 'Suitcase');
+    suitcase.setAttribute('aria-label', t('suitcaseLabel'));
     const checkedCount = state.items.filter((i) => i.checked).length;
     suitcase.innerHTML = `
       <div class="suitcase-body" aria-hidden="true">
         <div class="suitcase-handle"></div>
         <div class="suitcase-stripe"></div>
       </div>
-      <p class="suitcase-count"><strong>${checkedCount}</strong> / ${state.items.length} packed</p>
+      <p class="suitcase-count">${t('packedCount', { packed: `<strong>${checkedCount}</strong>`, total: state.items.length })}</p>
     `;
     root.appendChild(suitcase);
 
     // Add-item form
     const form = document.createElement('form');
     form.className = 'add-form';
-    form.setAttribute('aria-label', 'Add a new item');
+    form.setAttribute('aria-label', t('addItemLabel'));
     form.innerHTML = `
-      <label class="visually-hidden" for="new-item-name">Item name</label>
-      <input id="new-item-name" name="name" type="text" placeholder="Add an item…" required maxlength="80" autocomplete="off" inputmode="text" />
-      <label class="visually-hidden" for="new-item-category">Category</label>
+      <label class="visually-hidden" for="new-item-name">${t('itemNameLabel')}</label>
+      <input id="new-item-name" name="name" type="text" placeholder="${t('itemNamePlaceholder')}" required maxlength="80" autocomplete="off" inputmode="text" />
+      <label class="visually-hidden" for="new-item-category">${t('categoryLabel')}</label>
       <select id="new-item-category" name="category">
-          <option value="documents">Documents</option>
-          <option value="clothing">Clothing</option>
-          <option value="toiletries">Toiletries</option>
-          <option value="electronics">Electronics</option>
-          <option value="pre-departure">Pre-departure</option>
+          ${CATEGORIES.map((cat) => `<option value="${cat}">${categoryLabel(state.language, cat)}</option>`).join('')}
         </select>
-      <button type="submit">Add</button>
+      <button type="submit">${t('add')}</button>
     `;
     const nameInput = /** @type {HTMLInputElement} */ (form.querySelector('#new-item-name'));
     nameInput.addEventListener('input', () => {
@@ -156,7 +156,7 @@ export async function initApp(root, opts = {}) {
     uncheckedSection.setAttribute('aria-labelledby', 'heading-unchecked');
     const uncheckedHeading = document.createElement('h2');
     uncheckedHeading.id = 'heading-unchecked';
-    uncheckedHeading.textContent = 'Unchecked items';
+    uncheckedHeading.textContent = t('uncheckedItems');
     uncheckedSection.appendChild(uncheckedHeading);
 
     const uncheckedItems = state.items.filter((i) => !i.checked);
@@ -177,8 +177,8 @@ export async function initApp(root, opts = {}) {
       const updateUncheckedToggle = () => {
         uncheckedToggle.setAttribute('aria-expanded', String(!uncheckedCollapsed));
         uncheckedToggle.textContent = uncheckedCollapsed
-          ? `Show ${uncheckedItems.length} items`
-          : 'Hide items';
+          ? t('showItems', { count: uncheckedItems.length })
+          : t('hideItems');
       };
       uncheckedToggle.addEventListener('click', () => {
         uncheckedCollapsed = !uncheckedCollapsed;
@@ -192,7 +192,7 @@ export async function initApp(root, opts = {}) {
     if (uncheckedItems.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'empty';
-      empty.textContent = 'Everything is packed';
+      empty.textContent = t('everythingPacked');
       uncheckedList.appendChild(empty);
     } else {
       for (const item of uncheckedItems) {
@@ -212,7 +212,7 @@ export async function initApp(root, opts = {}) {
       section.setAttribute('aria-labelledby', `heading-${cat}`);
       const heading = document.createElement('h2');
       heading.id = `heading-${cat}`;
-      heading.textContent = CATEGORY_LABELS[cat];
+      heading.textContent = categoryLabel(state.language, cat);
       section.appendChild(heading);
 
       const ul = document.createElement('ul');
@@ -221,7 +221,7 @@ export async function initApp(root, opts = {}) {
       if (items.length === 0) {
         const empty = document.createElement('li');
         empty.className = 'empty';
-        empty.textContent = 'Nothing here yet — add something above.';
+        empty.textContent = t('emptyCategory');
         ul.appendChild(empty);
       } else {
         for (const item of items) {
@@ -243,15 +243,15 @@ export async function initApp(root, opts = {}) {
       ? `dev`
       : `<a class="commit-link" href="https://github.com/DevSecNinja/travel-prep/commit/${shortHash}" target="_blank" rel="noopener">${shortHash}</a>`;
     footer.innerHTML = `
-      <p>Travel Prep &mdash; Built by <a href="https://github.com/DevSecNinja" target="_blank" rel="noopener">DevSecNinja</a></p>
-      <p class="storage-note">Your list is stored in this browser and will be lost if cache storage is cleared. For mobile, install Travel Prep as a PWA.</p>
+      <p>${t('builtBy')} <a href="https://github.com/DevSecNinja" target="_blank" rel="noopener">DevSecNinja</a></p>
+      <p class="storage-note">${t('storageNote')}</p>
       <span class="commit-sha">${commitContent}</span>
       <div class="github-star">
         <a href="https://github.com/DevSecNinja/travel-prep" target="_blank" rel="noopener" class="github-star-button">
           <span class="github-star-icon">⭐</span>
-          <span id="starCountText">Star on GitHub</span>
+          <span id="starCountText">${t('starOnGitHub')}</span>
         </a>
-        <span class="github-star-cta">If you find this useful, please star the repo to support! 🧳</span>
+        <span class="github-star-cta">${t('githubStarCta')}</span>
       </div>
     `;
     root.appendChild(footer);
@@ -299,20 +299,40 @@ export async function initApp(root, opts = {}) {
   function updateStarCount(count) {
     const el = root.querySelector('#starCountText');
     if (el && count !== undefined) {
-      const plural = count === 1 ? 'star' : 'stars';
-      el.textContent = `${count.toLocaleString()} ${plural}`;
+      const key = count === 1 ? 'starCount' : 'starCountPlural';
+      el.textContent = translate(state.language, key, { count: count.toLocaleString() });
     }
+  }
+
+  function buildLanguageSelect() {
+    const wrap = document.createElement('label');
+    wrap.className = 'language-select';
+    wrap.innerHTML = `
+      <span class="visually-hidden">${translate(state.language, 'language')}</span>
+      <select aria-label="${translate(state.language, 'language')}">
+        ${LANGUAGE_OPTIONS.map(({ code, name }) => `<option value="${code}">${name}</option>`).join('')}
+      </select>
+    `;
+    const select = /** @type {HTMLSelectElement} */ (wrap.querySelector('select'));
+    select.value = state.language;
+    select.addEventListener('change', () => {
+      state.language = resolveLanguage(select.value);
+      saveState(state, storage);
+      applyLanguage(state.language);
+      render();
+    });
+    return wrap;
   }
 
   function buildThemeSelect() {
     const wrap = document.createElement('label');
     wrap.className = 'theme-select';
     wrap.innerHTML = `
-      <span class="visually-hidden">Theme</span>
-      <select aria-label="Theme">
-        <option value="auto">🌗 Auto</option>
-        <option value="light">☀️ Light</option>
-        <option value="dark">🌙 Dark</option>
+      <span class="visually-hidden">${translate(state.language, 'theme')}</span>
+      <select aria-label="${translate(state.language, 'theme')}">
+        <option value="auto">${translate(state.language, 'themeAuto')}</option>
+        <option value="light">${translate(state.language, 'themeLight')}</option>
+        <option value="dark">${translate(state.language, 'themeDark')}</option>
       </select>
     `;
     const select = /** @type {HTMLSelectElement} */ (wrap.querySelector('select'));
@@ -329,7 +349,7 @@ export async function initApp(root, opts = {}) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'check-all-btn';
-    btn.textContent = 'Check all';
+    btn.textContent = translate(state.language, 'checkAll');
     btn.addEventListener('click', () => {
       checkAll();
     });
@@ -340,7 +360,7 @@ export async function initApp(root, opts = {}) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'reset-btn';
-    btn.textContent = 'Uncheck all';
+    btn.textContent = translate(state.language, 'uncheckAll');
     btn.addEventListener('click', () => {
       uncheckAll();
     });
@@ -351,7 +371,7 @@ export async function initApp(root, opts = {}) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'share-btn';
-    btn.textContent = '🔗 Share list';
+    btn.textContent = translate(state.language, 'shareList');
     btn.addEventListener('click', () => {
       showShareDialog(buildShareUrl(state.items));
     });
@@ -369,14 +389,14 @@ export async function initApp(root, opts = {}) {
     const dialog = document.createElement('div');
     dialog.className = 'modal';
     dialog.innerHTML = `
-      <h2 id="share-dialog-title" class="modal-title">📤 Share your list</h2>
-      <p class="modal-desc">Copy this link and send it to anyone — they can choose which items to add to their own list.</p>
+      <h2 id="share-dialog-title" class="modal-title">${translate(state.language, 'shareTitle')}</h2>
+      <p class="modal-desc">${translate(state.language, 'shareDescription')}</p>
       <div class="share-url-row">
-        <input class="share-url-input" type="text" readonly aria-label="Shareable link" />
-        <button type="button" class="share-copy-btn">Copy</button>
+        <input class="share-url-input" type="text" readonly aria-label="${translate(state.language, 'shareableLink')}" />
+        <button type="button" class="share-copy-btn">${translate(state.language, 'copy')}</button>
       </div>
       <div class="modal-actions">
-        <button type="button" class="modal-close-btn">Done</button>
+        <button type="button" class="modal-close-btn">${translate(state.language, 'done')}</button>
       </div>
     `;
 
@@ -393,8 +413,10 @@ export async function initApp(root, opts = {}) {
         input.select();
         success = document.execCommand('copy');
       }
-      copyBtn.textContent = success ? 'Copied!' : 'Copy failed';
-      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      copyBtn.textContent = success
+        ? translate(state.language, 'copied')
+        : translate(state.language, 'copyFailed');
+      setTimeout(() => { copyBtn.textContent = translate(state.language, 'copy'); }, 2000);
     });
 
     const handleKeyDown = (/** @type {KeyboardEvent} */ e) => {
@@ -442,18 +464,18 @@ export async function initApp(root, opts = {}) {
     const title = document.createElement('h2');
     title.id = 'import-dialog-title';
     title.className = 'modal-title';
-    title.textContent = '📥 Import shared list';
+    title.textContent = translate(state.language, 'importTitle');
     dialog.appendChild(title);
 
     if (newItems.length === 0) {
       const note = document.createElement('p');
       note.className = 'modal-desc';
-      note.textContent = 'All items from this shared list are already in your list.';
+      note.textContent = translate(state.language, 'allSharedItemsExist');
       dialog.appendChild(note);
     } else {
       const desc = document.createElement('p');
       desc.className = 'modal-desc';
-      desc.textContent = 'Select the items you want to add to your list:';
+      desc.textContent = translate(state.language, 'selectItemsToAdd');
       dialog.appendChild(desc);
 
       for (const cat of CATEGORIES) {
@@ -466,7 +488,7 @@ export async function initApp(root, opts = {}) {
 
         const heading = document.createElement('h3');
         heading.className = 'import-category-heading';
-        heading.textContent = CATEGORY_LABELS[cat];
+        heading.textContent = categoryLabel(state.language, cat);
         section.appendChild(heading);
 
         const ul = document.createElement('ul');
@@ -483,7 +505,7 @@ export async function initApp(root, opts = {}) {
           cb.dataset.category = item.category;
           const lbl = document.createElement('label');
           lbl.htmlFor = cb.id;
-          lbl.textContent = item.name;
+          lbl.textContent = itemLabel(state.language, item.name);
           li.appendChild(cb);
           li.appendChild(lbl);
           ul.appendChild(li);
@@ -496,9 +518,10 @@ export async function initApp(root, opts = {}) {
           cb.type = 'checkbox';
           cb.checked = false;
           cb.disabled = true;
-          cb.setAttribute('aria-label', `${item.name} — already in your list`);
+          const displayName = itemLabel(state.language, item.name);
+          cb.setAttribute('aria-label', translate(state.language, 'alreadyInYourListAria', { item: displayName }));
           const lbl = document.createElement('label');
-          lbl.textContent = `${item.name} (already in your list)`;
+          lbl.textContent = translate(state.language, 'alreadyInYourListLabel', { item: displayName });
           li.appendChild(cb);
           li.appendChild(lbl);
           ul.appendChild(li);
@@ -525,7 +548,7 @@ export async function initApp(root, opts = {}) {
     const cancelBtn = document.createElement('button');
     cancelBtn.type = 'button';
     cancelBtn.className = 'modal-cancel-btn';
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = translate(state.language, 'cancel');
     cancelBtn.addEventListener('click', close);
     actions.appendChild(cancelBtn);
 
@@ -533,7 +556,7 @@ export async function initApp(root, opts = {}) {
       const importBtn = document.createElement('button');
       importBtn.type = 'button';
       importBtn.className = 'modal-import-btn';
-      importBtn.textContent = 'Import selected';
+      importBtn.textContent = translate(state.language, 'importSelected');
       importBtn.addEventListener('click', () => {
         const checkboxes = /** @type {NodeListOf<HTMLInputElement>} */ (
           dialog.querySelectorAll('.import-item input[type="checkbox"]:checked:not(:disabled)')
@@ -592,7 +615,8 @@ export async function initApp(root, opts = {}) {
 
     const label = document.createElement('label');
     label.htmlFor = cb.id;
-    label.textContent = item.name;
+    const displayName = itemLabel(state.language, item.name);
+    label.textContent = displayName;
 
     li.appendChild(cb);
     li.appendChild(label);
@@ -601,7 +625,7 @@ export async function initApp(root, opts = {}) {
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'remove-btn';
-      removeBtn.setAttribute('aria-label', `Remove ${item.name}`);
+      removeBtn.setAttribute('aria-label', translate(state.language, 'removeItem', { item: displayName }));
       removeBtn.textContent = '×';
       removeBtn.addEventListener('click', () => removeItem(item.id));
       li.appendChild(removeBtn);
@@ -767,5 +791,10 @@ export async function initApp(root, opts = {}) {
   /** @param {'auto'|'light'|'dark'} theme */
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
+  }
+
+  /** @param {'en'|'nl'} language */
+  function applyLanguage(language) {
+    document.documentElement.lang = language;
   }
 }
