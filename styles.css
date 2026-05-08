@@ -166,6 +166,12 @@ button {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.controls > * {
+  display: flex;
+  margin: 0;
 }
 
 .language-select select,
@@ -182,6 +188,20 @@ button {
   background: var(--surface-strong);
   color: var(--text);
   box-shadow: var(--shadow);
+}
+
+.language-select select,
+.theme-select select,
+.reset-btn,
+.check-all-btn,
+.share-btn {
+  min-height: 2.6rem;
+  line-height: 1.2;
+}
+
+.language-select select,
+.theme-select select {
+  width: 100%;
 }
 
 .reset-btn {

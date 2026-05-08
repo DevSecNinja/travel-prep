@@ -357,6 +357,12 @@ describe('app integration', () => {
     }
   });
 
+  it('uses shared sizing rules for the top header controls', () => {
+    expect(STYLES).toContain('.controls > *');
+    expect(STYLES).toContain('align-items: stretch;');
+    expect(STYLES).toContain('min-height: 2.6rem;');
+  });
+
   it('stores new items in lowercase regardless of input case', async () => {
     const { root, storage } = await mount();
     const input = root.querySelector('#new-item-name');
