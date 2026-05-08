@@ -169,7 +169,8 @@ button {
   align-items: stretch;
 }
 
-.controls > * {
+.controls .language-select,
+.controls .theme-select {
   display: flex;
   margin: 0;
 }
@@ -190,17 +191,15 @@ button {
   box-shadow: var(--shadow);
 }
 
-.language-select select,
-.theme-select select,
-.reset-btn,
-.check-all-btn,
-.share-btn {
+.controls select,
+.controls .reset-btn,
+.controls .check-all-btn,
+.controls .share-btn {
   min-height: 2.6rem;
   line-height: 1.2;
 }
 
-.language-select select,
-.theme-select select {
+.controls select {
   width: 100%;
 }
 

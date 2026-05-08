@@ -358,9 +358,36 @@ describe('app integration', () => {
   });
 
   it('uses shared sizing rules for the top header controls', () => {
-    expect(STYLES).toContain('.controls > *');
-    expect(STYLES).toContain('align-items: stretch;');
-    expect(STYLES).toContain('min-height: 2.6rem;');
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    document.head.appendChild(style);
+
+    try {
+      const rules = Array.from(style.sheet.cssRules);
+      const hasSelectors = (rule, expectedSelectors) => {
+        const selectors = (rule.selectorText ?? '')
+          .split(',')
+          .map((selector) => selector.trim())
+          .filter(Boolean);
+        return selectors.length === expectedSelectors.length
+          && expectedSelectors.every((selector) => selectors.includes(selector));
+      };
+      const controlsRule = rules.find((rule) => rule.selectorText === '.controls');
+      const wrapperRule = rules.find((rule) =>
+        hasSelectors(rule, ['.controls .language-select', '.controls .theme-select']));
+      const sizingRule = rules.find((rule) =>
+        hasSelectors(rule, ['.controls select', '.controls .reset-btn', '.controls .check-all-btn', '.controls .share-btn']));
+
+      expect(controlsRule).toBeTruthy();
+      expect(controlsRule.style.alignItems).toBe('stretch');
+      expect(wrapperRule).toBeTruthy();
+      expect(wrapperRule.style.display).toBe('flex');
+      expect(sizingRule).toBeTruthy();
+      expect(sizingRule.style.minHeight).toBe('2.6rem');
+      expect(sizingRule.style.lineHeight).toBe('1.2');
+    } finally {
+      style.remove();
+    }
   });
 
   it('stores new items in lowercase regardless of input case', async () => {
