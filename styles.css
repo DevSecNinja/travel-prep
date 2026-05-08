@@ -168,6 +168,7 @@ button {
   flex-wrap: wrap;
 }
 
+.language-select select,
 .theme-select select,
 .reset-btn,
 .check-all-btn,

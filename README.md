@@ -12,6 +12,8 @@ train or road trip.
   and **Pre-departure** — seeded from [`data/items.yaml`](./data/items.yaml).
 - Add your own items, check / uncheck them, or **uncheck all** with a single
   click after your trip.
+- Switch between **English** and **Dutch** at runtime; the language choice is
+  saved in your browser.
 - A 🧳 suitcase animation flies each item into the case as you pack it
   (respects `prefers-reduced-motion`).
 - All your data lives **only in your browser** (`localStorage`).
@@ -48,6 +50,7 @@ deployed.
 ├── src/
 │   ├── main.js              # entry point + SW registration
 │   ├── app.js               # rendering + interaction logic
+│   ├── i18n/                # English / Dutch UI, category and item labels
 │   ├── storage.js           # localStorage shape + merge helpers
 │   └── yaml.js              # tiny YAML parser
 ├── data/items.yaml          # seed packing list
@@ -59,6 +62,13 @@ deployed.
 ```
 
 See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the design notes.
+
+## Languages
+
+Use the language selector in the header to switch between English and Dutch
+without reloading the page. The selected language is stored in `localStorage`.
+To add a language, add a module in `src/i18n/` with UI strings, category labels,
+and seed-item labels, then register it in `src/i18n/index.js`.
 
 ## Contributing
 
