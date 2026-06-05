@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.8",
-    "axe-core": "4.11.4",
+    "axe-core": "4.12.0",
     "jsdom": "29.1.1",
     "vitest": "4.1.8"
   }
