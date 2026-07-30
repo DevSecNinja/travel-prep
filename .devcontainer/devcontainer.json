@@ -1,6 +1,6 @@
 {
   "name": "wazzup",
-  "image": "ghcr.io/devsecninja/dotfiles-devcontainer:latest@sha256:ff377c651c05a3ccb43587260e5e17da291115d6fb74865a97570cbe45fa9c7c",
+  "image": "ghcr.io/devsecninja/dotfiles-devcontainer:latest@sha256:5df82750400854d070a637850e46ee03790bb6e184f0f4e30b9a714818112e28",
   "features": {},
   "postCreateCommand": "",
   "customizations": {}
