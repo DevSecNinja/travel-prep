@@ -9,6 +9,11 @@ documents:
   - pen
   - ns business card
   - work badge
+  - physical driving licence
+  - car rental voucher
+  - rental insurance certificate
+  - credit card in main driver's name
+  - international driving permit (if required)
 clothing:
   - socks
   - underwear
@@ -64,6 +69,8 @@ electronics:
   - surface power adapter
   - large lens cloth
   - nanopresso espresso maker
+  - car phone mount
+  - 12v car charger
 pre-departure:
   - home assistant in vacation mode
   - empty trash
@@ -80,3 +87,12 @@ pre-departure:
   - open ventilation grilles
   - empty laptop bag
   - refill water bottle at lounge
+  - add flight number to car rental booking
+  - check car pickup and drop-off instructions
+  - check rental deposit and credit card limit
+  - check fuel and mileage policy
+  - check additional driver registration
+  - check road, toll, parking and ztl restrictions
+  - download offline maps
+  - save rental documents offline
+  - photograph rental car at pickup and return
